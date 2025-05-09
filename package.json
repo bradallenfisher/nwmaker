@@ -5,7 +5,8 @@
         "bulk": "node bulk-generator.js",
         "bulk-project": "node bulk-generator.js --project",
         "article": "node article-generator.js",
-        "questions": "node questions-generator.js"
+        "questions": "node questions-generator.js",
+        "image": "node image-generator.js"
     },
     "dependencies": {
         "@google/genai": "^0.10.0",
