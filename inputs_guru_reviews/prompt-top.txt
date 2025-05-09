@@ -1,0 +1,4 @@
+{spin}="Stay up to date with our review site. We cover the latest in online marketing and sales oppotunities. We specifically review gurus and new business models. We want to make sure you are choosing the best model for your digital business."
+{website}="https://www.digitalshortcuts.com/"
+{search_intent}="Informational"
+{page_type}="Review Post"

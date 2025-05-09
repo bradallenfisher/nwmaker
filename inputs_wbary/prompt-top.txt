@@ -1,0 +1,5 @@
+{spin}="For over 45 years, W-Bar-Y Fence has been the trusted name for securing and beautifying properties in the Springfield and Branson area. We're experienced professionals installing high-quality fences – residential, commercial, or industrial – along with decks and pergolas. When you need reliable service and lasting quality, think W-Bar-Y."
+{business}="W-Bar-Y Fence Co, Inc."
+{website}="http://www.wbaryfence.com"
+{search_intent}="Commercial"
+{page_type}="Blog Post"

@@ -1,0 +1,16 @@
+Create a an article for "{title}"
+
+The article should:
+- Start exactly with the # Heading tag.
+- Should be a short informational post about the field of home renovations.
+- Should not contain any comunication back and forth from AI.
+  - For example: Don't print something like this before the h1.
+  (Here's an article designed to attract readers searching for... etc.")
+- Should be ready to copy and paste into a CMS.
+- Help support the main ${keyword}.
+- Contain 500-600 words.
+- Contain 5-6 headings that use strings from ${titleTermsList}.
+- Be formatted using markdown
+- Contain bold items, strong items, lists, and links to supporting content.
+- Prioritize covering entities with higher importance and relevance scores.
+- End with a simple conclusion and a call to action.

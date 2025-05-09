@@ -1,0 +1,5 @@
+{spin}="We specialize in comprehensive excavation services, proudly serving Bellefonte, State College, Milesburg, Port Matilda, Julian, Tyrone, Phillipsburg, Snow Shoe, Moshannon, Howard, Mill Hall, Lock Haven, Avis, Jersey Shore, Pleasant Gap, Centre Hall, Spring Mills, Millhiem, Aaronsburg, Woodward and Lewistown."
+{business}="Eger Excavating & Concrete LLC"
+{website}="https://egerexco.com/"
+{search_intent}="Commercial"
+{page_type}="Service Page"

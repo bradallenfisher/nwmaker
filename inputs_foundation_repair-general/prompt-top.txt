@@ -1,0 +1,4 @@
+{spin}="Your home's foundation isn't just concrete—it's peace of mind. Small cracks today could become big headaches tomorrow, costing you thousands and threatening your home's safety and value. Get clear answers to common questions about foundation repair, including detailed cost insights, expert repair methods, and crucial warning signs you shouldn’t ignore. Empower yourself with the knowledge to protect your most valuable investment—your home."
+{website}="https://foundation-repair.elementor.psu.edu/"
+{search_intent}="Informational"
+{page_type}="Blog Post"

@@ -1,0 +1,6 @@
+4Weq e3RV EiXt 0axf bgyB pKg2
+
+./wp.sh https://digital-gurus.elementor.psu.edu bradallenfisher@gmail.com "4Weq e3RV EiXt 0axf bgyB pKg2" /Users/bradfisher/projects/_dev/nw_content/nw-content/outputs/html 1
+
+
+./11ty [directory]

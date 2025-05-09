@@ -1,0 +1,15 @@
+create a blog post that thoroughly answers {question}.
+
+The article should:
+- Start exactly with the # Heading tag.
+- Should be a short supporting article supports {question}.
+- Should contain exactly 1 link to https://leadcraftr.com/posts/lead-generation/
+- Should not contain any comunication back and forth from AI.
+  - For example: Don't print something like this before the h1.
+  (Here's an article designed to attract readers searching for... etc.")
+- Should be ready to copy and paste into a CMS.
+- Fully answer the {question}.
+- Be formatted using markdown.
+- Contain bold items, strong items, lists, and links to supporting content.
+- Prioritize covering entities with higher importance and relevance scores.
+- End with a simple conclusion and a call to action

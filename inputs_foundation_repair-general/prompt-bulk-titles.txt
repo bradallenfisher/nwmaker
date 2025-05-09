@@ -1,0 +1,16 @@
+Create 2 topically relevant but significantly unique titles to support the main ${keyword}.
+
+Key Information to Consider:
+1. Title-Focused Terms: ${titleTermsList}
+2. Core Content Terms: ${basicTermsList}
+3. Key Entities and their Metrics:
+${entitiesList}
+
+The titles should:
+- Not use the same ${keyword} as the title.
+- All be on a new line
+- Contain no formatting
+- Not contain ordered lists or unordered lists.
+- Not start with a Number and a . (1. or 2. etc..)
+- It's ok to start with a  number if it's part of the content, but not as a listing item.
+- Not contain a new line bewteen each titles

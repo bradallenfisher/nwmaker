@@ -1,0 +1,4 @@
+{spin}="ACS is the commercial and residential cleaning leader in the St. Joseph area. We are a company large enough to handle big jobs, but with the intimacy and customer service of a small company. ACS has complete insurance coverage and a dependable, well-trained staff. We offer a wide assortment of services and back it up with a 100% guarantee."
+{website}="http://acscleans.com/"
+{search_intent}="Commercial"
+{page_type}="Blog Post"
