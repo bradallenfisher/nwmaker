@@ -2,21 +2,29 @@
 
 # Check if directory is provided as argument
 if [ -z "$1" ]; then
-    echo "Usage: ./11ty.sh <directory-path>"
-    echo "Example: ./11ty.sh outputs/bulk/content"
+    echo "Usage: ./11ty.sh <content-directory-path> [images-directory-path]"
+    echo "Example: ./11ty.sh outputs/bulk/content outputs/images/pixabay/nature"
     exit 1
 fi
 
 CONTENT_DIR="$1"
 # Create a new directory for processed files by adding '_11ty' suffix to the original directory name
 OUTPUT_DIR="${CONTENT_DIR}_11ty"
-IMAGES_DIR="${CONTENT_DIR}/images"
+
+# Check if images directory is provided as second argument, otherwise use default
+if [ -n "$2" ]; then
+    IMAGES_DIR="$2"
+else
+    IMAGES_DIR="${CONTENT_DIR}/images"
+fi
+
 OUTPUT_IMAGES_DIR="${OUTPUT_DIR}/images"
 
 # Create the output directories if they don't exist
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_IMAGES_DIR"
 echo "Created output directories: $OUTPUT_DIR and $OUTPUT_IMAGES_DIR"
+echo "Using images from: $IMAGES_DIR"
 
 # Function to sanitize filename
 sanitize_filename() {

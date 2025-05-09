@@ -5,17 +5,3 @@
 
 ./11ty [directory]
 
-image gen
-npm run image "nature,landscape" --limit=10 --size=large --order=latest
-
-Available options:
---limit=<number>: Number of images to download (default: 5)
---size=<string>: Image size to download (options: original, large, medium) (default: large)
---order=<string>: How to order results (options: popular, latest) (default: popular)
---imageType=<string>: Type of image (options: all, photo, illustration, vector) (default: photo)
---orientation=<string>: Image orientation (options: all, horizontal, vertical) (default: horizontal)
---category=<string>: Image category
---safeSearch=<boolean>: Enable/disable safe search
---minWidth=<number>: Minimum image width
---minHeight=<number>: Minimum image height
---colors=<string>: Filter by colors (comma-separated)
