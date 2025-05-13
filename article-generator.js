@@ -60,10 +60,82 @@ class ArticleGenerator {
     await fs.mkdir(path.join('outputs', 'html'), { recursive: true });
   }
 
-  async run() {
+  // Process a single prompt file
+  async processPromptFile(promptFile) {
+    try {
+      console.log(`\nProcessing: ${promptFile}`);
+      
+      // Read the prompt file
+      const promptPath = path.join('outputs', promptFile);
+      const fileContent = await fs.readFile(promptPath, 'utf8');
+      
+      let promptData;
+      try {
+        promptData = JSON.parse(fileContent);
+      } catch (e) {
+        console.log('File is in old format or not JSON, treating as plain prompt');
+        promptData = { prompt: fileContent };
+      }
+
+      // Generate article
+      console.log('Generating article...');
+      const markdownContent = await this.generateArticle(promptData.prompt);
+
+      // Convert markdown to HTML
+      const htmlContent = marked(markdownContent);
+
+      // Create output filenames - handle both .json and .txt extensions
+      const baseName = promptFile.replace('-prompt.json', '').replace('-prompt.txt', '');
+      const mdOutputPath = path.join('outputs', 'md', `${baseName}.md`);
+      const htmlOutputPath = path.join('outputs', 'html', `${baseName}.html`);
+
+      // Save both markdown and HTML versions
+      console.log(`Saving markdown to: ${mdOutputPath}`);
+      await fs.writeFile(mdOutputPath, markdownContent);
+
+      console.log(`Saving HTML to: ${htmlOutputPath}`);
+      await fs.writeFile(htmlOutputPath, htmlContent);
+
+      // Import to NeuronWriter if we have queryId
+      if (promptData.metadata?.queryId) {
+        await this.importToNeuronWriter(
+          promptData.metadata.queryId,
+          htmlContent,
+          // Extract title from markdown content (first h1)
+          markdownContent.match(/^# (.*?)$/m)?.[1]
+        );
+      }
+
+      return {
+        promptFile,
+        mdOutputPath,
+        htmlOutputPath
+      };
+    } catch (error) {
+      console.error(`Error processing ${promptFile}:`, error.message);
+      throw error;
+    }
+  }
+
+  async run(specificPromptFile = null) {
     try {
       await this.ensureDirectories();
 
+      // If a specific file is provided, only process that file
+      if (specificPromptFile) {
+        // Check if the file exists
+        try {
+          await fs.access(path.join('outputs', specificPromptFile));
+          await this.processPromptFile(specificPromptFile);
+          console.log(`\nSuccessfully processed ${specificPromptFile}`);
+        } catch (error) {
+          console.error(`Error: ${specificPromptFile} not found in the outputs directory.`);
+          process.exit(1);
+        }
+        return;
+      }
+
+      // Otherwise process all prompt files
       const files = await fs.readdir('outputs');
       const promptFiles = files.filter(file => 
         (file.endsWith('-prompt.json') || file.endsWith('-prompt.txt')) && !file.startsWith('.')
@@ -73,52 +145,10 @@ class ArticleGenerator {
 
       for (const promptFile of promptFiles) {
         try {
-          console.log(`\nProcessing: ${promptFile}`);
+          await this.processPromptFile(promptFile);
           
-          // Read the prompt file
-          const promptPath = path.join('outputs', promptFile);
-          const fileContent = await fs.readFile(promptPath, 'utf8');
-          
-          let promptData;
-          try {
-            promptData = JSON.parse(fileContent);
-          } catch (e) {
-            console.log('File is in old format or not JSON, treating as plain prompt');
-            promptData = { prompt: fileContent };
-          }
-
-          // Generate article
-          console.log('Generating article...');
-          const markdownContent = await this.generateArticle(promptData.prompt);
-
-          // Convert markdown to HTML
-          const htmlContent = marked(markdownContent);
-
-          // Create output filenames - handle both .json and .txt extensions
-          const baseName = promptFile.replace('-prompt.json', '').replace('-prompt.txt', '');
-          const mdOutputPath = path.join('outputs', 'md', `${baseName}.md`);
-          const htmlOutputPath = path.join('outputs', 'html', `${baseName}.html`);
-
-          // Save both markdown and HTML versions
-          console.log(`Saving markdown to: ${mdOutputPath}`);
-          await fs.writeFile(mdOutputPath, markdownContent);
-
-          console.log(`Saving HTML to: ${htmlOutputPath}`);
-          await fs.writeFile(htmlOutputPath, htmlContent);
-
-          // Import to NeuronWriter if we have queryId
-          if (promptData.metadata?.queryId) {
-            await this.importToNeuronWriter(
-              promptData.metadata.queryId,
-              htmlContent,
-              // Extract title from markdown content (first h1)
-              markdownContent.match(/^# (.*?)$/m)?.[1]
-            );
-          }
-
           // Add a small delay between requests
           await new Promise(resolve => setTimeout(resolve, 1000));
-
         } catch (error) {
           console.error(`Error processing ${promptFile}:`, error.message);
           continue;
@@ -145,8 +175,11 @@ const run = async () => {
     process.exit(1);
   }
 
+  // Check for a specific file parameter
+  const specificPromptFile = process.argv[2];
+
   const articleGenerator = new ArticleGenerator(aiProviderType, aiProviderKey, nwApiKey);
-  await articleGenerator.run();
+  await articleGenerator.run(specificPromptFile);
 };
 
 run().catch(console.error); 

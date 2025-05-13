@@ -111,6 +111,22 @@ class QuestionsGenerator {
       await fs.mkdir(mdDir, { recursive: true });
       await fs.mkdir(htmlDir, { recursive: true });
       
+      // Create an index of all questions for linking
+      const questionIndex = questions.map(q => {
+        const { question } = q;
+        const safeQuestion = question
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 50);
+        
+        return {
+          question,
+          filename: `${safeQuestion}.md`,
+          htmlFilename: `${safeQuestion}.html`
+        };
+      });
+      
       // Process each question
       for (let i = 0; i < questions.length; i++) {
         const { question, type } = questions[i];
@@ -127,14 +143,17 @@ class QuestionsGenerator {
         // Generate post content
         const markdownContent = await this.generateQuestionPost(question, keyword);
         
+        // Add links to related questions at the bottom of the content
+        const updatedContent = this.addRelatedQuestionLinks(markdownContent, questionIndex, safeQuestion, keyword);
+        
         // Convert to HTML
-        const htmlContent = marked(markdownContent);
+        const htmlContent = marked(updatedContent);
         
         // Save files
         const markdownPath = path.join(mdDir, `${safeQuestion}.md`);
         const htmlPath = path.join(htmlDir, `${safeQuestion}.html`);
         
-        await fs.writeFile(markdownPath, markdownContent);
+        await fs.writeFile(markdownPath, updatedContent);
         await fs.writeFile(htmlPath, htmlContent);
         
         console.log(`Saved to ${markdownPath}`);
@@ -157,8 +176,81 @@ class QuestionsGenerator {
   }
 
   /**
+   * Adds related question links to the bottom of a post
+   * @param {string} content - The original post content
+   * @param {Array} questionIndex - List of all questions
+   * @param {string} currentQuestionFile - Filename of the current question
+   * @param {string} keyword - The main keyword
+   * @returns {string} - Content with related links section
+   */
+  addRelatedQuestionLinks(content, questionIndex, currentQuestionFile, keyword) {
+    // Get up to 5 random questions, excluding the current one
+    const otherQuestions = questionIndex
+      .filter(q => !q.filename.startsWith(currentQuestionFile))
+      .sort(() => 0.5 - Math.random()) // shuffle the array
+      .slice(0, 5);
+    
+    if (otherQuestions.length === 0) {
+      return content;
+    }
+    
+    // Add a "Related Questions" section at the end with links
+    let relatedContent = `\n\n## More Questions About ${keyword}\n\n`;
+    otherQuestions.forEach(q => {
+      // Create a link with the proper format: /posts/filename (without .md extension)
+      const linkPath = `/posts/${path.parse(q.filename).name}`;
+      relatedContent += `- [${q.question}](${linkPath})\n`;
+    });
+    
+    return content + relatedContent;
+  }
+
+  /**
+   * Generates an index page that links to all question posts
+   * @param {string} keyword - The main keyword
+   * @param {Array} questionIndex - List of all questions
+   * @param {string} mdDir - Directory for markdown files
+   * @param {string} htmlDir - Directory for HTML files
+   */
+  async generateIndexPage(keyword, questionIndex, mdDir, htmlDir) {
+    const title = `Common Questions About ${keyword}`;
+    
+    // Create markdown index
+    let mdContent = `# ${title}\n\n`;
+    mdContent += `This page provides answers to common questions about ${keyword}.\n\n`;
+    
+    // Group questions by type if available
+    const groupedQuestions = questionIndex.reduce((acc, q) => {
+      const type = q.type || 'general';
+      if (!acc[type]) acc[type] = [];
+      acc[type].push(q);
+      return acc;
+    }, {});
+    
+    // Add links to all questions
+    Object.keys(groupedQuestions).forEach(type => {
+      if (type !== 'general') {
+        mdContent += `## ${type.charAt(0).toUpperCase() + type.slice(1)} Questions\n\n`;
+      }
+      
+      groupedQuestions[type].forEach(q => {
+        mdContent += `- [${q.question}](./${q.filename})\n`;
+      });
+      
+      mdContent += '\n';
+    });
+    
+    // Convert to HTML
+    const htmlContent = marked(mdContent);
+    
+    // Save files
+    await fs.writeFile(path.join(mdDir, 'index.md'), mdContent);
+    await fs.writeFile(path.join(htmlDir, 'index.html'), htmlContent);
+  }
+
+  /**
    * Lists all available question files
-   * @returns {Array} Array of query IDs with available question data
+   * @returns {Array} Array of objects with queryId and keyword data
    */
   async listAvailableQuestions() {
     try {
@@ -168,10 +260,31 @@ class QuestionsGenerator {
       // Filter for question files
       const questionFiles = files.filter(file => file.startsWith('questions-') && file.endsWith('.json'));
       
-      // Extract query IDs from filenames
-      const queryIds = questionFiles.map(file => file.replace('questions-', '').replace('.json', ''));
+      // Extract query IDs from filenames and load keyword data
+      const queryInfoList = [];
       
-      return queryIds;
+      for (const file of questionFiles) {
+        const queryId = file.replace('questions-', '').replace('.json', '');
+        try {
+          // Load the JSON file to get the keyword
+          const filePath = path.join(questionsDir, file);
+          const fileContent = await fs.readFile(filePath, 'utf8');
+          const data = JSON.parse(fileContent);
+          
+          queryInfoList.push({
+            queryId,
+            keyword: data.keyword || 'Unknown keyword'
+          });
+        } catch (err) {
+          // If can't read the file or parse JSON, still include the ID but with unknown keyword
+          queryInfoList.push({
+            queryId,
+            keyword: 'Unable to read keyword'
+          });
+        }
+      }
+      
+      return queryInfoList;
     } catch (error) {
       console.error('Error listing available question files:', error);
       return [];
@@ -201,20 +314,21 @@ const runQuestions = async (queryId) => {
       await questionsGenerator.processQueryQuestions(queryId);
     } else {
       // List available question files and let user choose
-      const availableQueries = await questionsGenerator.listAvailableQuestions();
+      const availableQueriesInfo = await questionsGenerator.listAvailableQuestions();
       
-      if (availableQueries.length === 0) {
+      if (availableQueriesInfo.length === 0) {
         console.log('No question files available. Please run "npm run bulk <queryId>" first to generate question data.');
         process.exit(0);
       }
       
       console.log('Available question files:');
-      for (let i = 0; i < availableQueries.length; i++) {
-        console.log(`${i + 1}. ${availableQueries[i]}`);
+      for (let i = 0; i < availableQueriesInfo.length; i++) {
+        const { queryId, keyword } = availableQueriesInfo[i];
+        console.log(`${i + 1}. ${queryId}  -  "${keyword}"`);
       }
       
       console.log('\nTo process questions, run: npm run questions <queryId>');
-      console.log('Example: npm run questions', availableQueries[0]);
+      console.log('Example: npm run questions', availableQueriesInfo[0].queryId);
     }
   } catch (error) {
     console.error('Error running questions processor:', error);

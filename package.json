@@ -7,13 +7,15 @@
         "article": "node article-generator.js",
         "questions": "node questions-generator.js",
         "pixabay": "node pixaby-gen.js",
-        "pexels": "node pexels-gen.js"
+        "pexels": "node pexels-gen.js",
+        "process-images": "node process-images.js"
     },
     "dependencies": {
         "@google/genai": "^0.10.0",
         "axios": "^1.9.0",
         "dotenv": "^16.3.1",
-        "marked": "^15.0.8"
+        "marked": "^15.0.8",
+        "sharp": "^0.34.1"
     },
     "devDependencies": {
         "@types/node": "^20.9.0",

@@ -1,23 +1,32 @@
 #!/bin/bash
 
+# ======================================
+# CONFIGURATION SECTION
+# ======================================
+
+# Define the list of tags to choose from
+TAGS=("Technology" "Marketing" "Automation" "Visualization" "Systems" "Data" "Optimization")
+
+# Date range for random dates (in days)
+MIN_DAYS_AGO=1
+MAX_DAYS_AGO=200
+
+# ======================================
+# SCRIPT LOGIC BELOW
+# ======================================
+
 # Check if directory is provided as argument
 if [ -z "$1" ]; then
-    echo "Usage: ./11ty.sh <content-directory-path> [images-directory-path]"
-    echo "Example: ./11ty.sh outputs/bulk/content outputs/images/pixabay/nature"
+    echo "Usage: ./11ty.sh <content-directory-path>"
+    echo "Example: ./11ty.sh outputs/bulk/content"
     exit 1
 fi
 
 CONTENT_DIR="$1"
 # Create a new directory for processed files by adding '_11ty' suffix to the original directory name
 OUTPUT_DIR="${CONTENT_DIR}_11ty"
-
-# Check if images directory is provided as second argument, otherwise use default
-if [ -n "$2" ]; then
-    IMAGES_DIR="$2"
-else
-    IMAGES_DIR="${CONTENT_DIR}/images"
-fi
-
+# Always use images directory inside the content directory
+IMAGES_DIR="${CONTENT_DIR}/images"
 OUTPUT_IMAGES_DIR="${OUTPUT_DIR}/images"
 
 # Create the output directories if they don't exist
@@ -26,9 +35,25 @@ mkdir -p "$OUTPUT_IMAGES_DIR"
 echo "Created output directories: $OUTPUT_DIR and $OUTPUT_IMAGES_DIR"
 echo "Using images from: $IMAGES_DIR"
 
+# Function to get a random tag
+get_random_tag() {
+    # Get a random index
+    index=$((RANDOM % ${#TAGS[@]}))
+    # Return the tag at that index
+    echo "${TAGS[$index]}"
+}
+
 # Function to sanitize filename
 sanitize_filename() {
-    echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//'
+    local sanitized=$(echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+    
+    # Ensure filename is never empty
+    if [ -z "$sanitized" ] || [ "$sanitized" = "-" ]; then
+        sanitized="untitled-content-$(date +%s)"  # Add timestamp to ensure uniqueness
+        echo "Warning: Empty filename after sanitization. Using '$sanitized' instead." >&2
+    fi
+    
+    echo "$sanitized"
 }
 
 # Function to properly capitalize title (reusing from wp.sh)
@@ -57,15 +82,28 @@ capitalize_title() {
     }'
 }
 
-# Function to get date from 36 hours ago
+# Function to get a random date between MIN_DAYS_AGO and MAX_DAYS_AGO
 get_past_date() {
-    # Use perl to subtract 36 hours (36*60*60 seconds) and format as YYYY-MM-DD
-    perl -MPOSIX -e '
-        $time = time() - 36*60*60;
-        @t = localtime($time);
-        printf "%04d-%02d-%02d\n", $t[5]+1900, $t[4]+1, $t[3];
-    '
+    # Generate random number of days within configured range
+    days_ago=$((RANDOM % (MAX_DAYS_AGO - MIN_DAYS_AGO + 1) + MIN_DAYS_AGO))
+    
+    # Use perl to subtract the random days and format as YYYY-MM-DD
+    perl -MPOSIX -e "
+        \$days = $days_ago;
+        \$time = time() - \$days*24*60*60;
+        @t = localtime(\$time);
+        printf \"%04d-%02d-%02d\n\", \$t[5]+1900, \$t[4]+1, \$t[3];
+    "
 }
+
+# Initialize tag tracking
+declare -A tag_counts
+for tag in "${TAGS[@]}"; do
+    tag_counts[$tag]=0
+done
+
+# Track total files processed
+total_processed=0
 
 # Process each markdown file
 for file in "$CONTENT_DIR"/*.md; do
@@ -81,6 +119,18 @@ for file in "$CONTENT_DIR"/*.md; do
         
         # Extract the first heading
         title=$(grep -m 1 "^#" "$file" | sed 's/^#\s*//')
+        
+        # If no title found, use the filename or a default
+        if [ -z "$title" ]; then
+            title=$(basename "$file" .md)
+            echo "Warning: No title found in $file, using filename as title: $title"
+            # If title is still problematic, use a generic title
+            if [ -z "$title" ] || [ "$title" = ".md" ]; then
+                title="Untitled Content $(date +%s)"
+                echo "Warning: Invalid title, using generic: $title"
+            fi
+        fi
+        
         title=$(capitalize_title "$title")
         
         # Create sanitized filename for image
@@ -113,6 +163,10 @@ for file in "$CONTENT_DIR"/*.md; do
         # Get date
         current_date=$(get_past_date)
         
+        # Get a random tag for this file
+        random_tag=$(get_random_tag)
+        tag_counts[$random_tag]=$((tag_counts[$random_tag] + 1))
+        
         # Write front matter and image to temp file
         cat > "$temp_file" << EOF
 ---
@@ -121,6 +175,7 @@ date: $current_date
 image: "${image_path}"
 tags:
   - post
+  - ${random_tag}
 ---
 
 ![${title}](${image_path})
@@ -148,8 +203,20 @@ EOF
         # Move the processed content to the output file
         mv "$temp_file" "$output_file"
         
-        echo "Added front matter, image, and removed heading from: $output_file"
+        echo "Added front matter, image, random tag '${random_tag}', and removed heading from: $output_file"
+        
+        # Increment total counter
+        total_processed=$((total_processed + 1))
     fi
 done
 
-echo "Front matter addition complete! Processed files are in: $OUTPUT_DIR"
+# Print tag distribution summary
+echo "-----------------------------------------"
+echo "Tag distribution:"
+for tag in "${!tag_counts[@]}"; do
+    echo "  ${tag}: ${tag_counts[$tag]} files"
+done
+
+echo "-----------------------------------------"
+echo "Front matter addition complete! Processed ${total_processed} files."
+echo "Output files are in: $OUTPUT_DIR"

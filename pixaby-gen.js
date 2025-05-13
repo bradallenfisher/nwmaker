@@ -2,19 +2,25 @@ const axios = require('axios');
 const fs = require('fs/promises');
 const path = require('path');
 const dotenv = require('dotenv');
+const sharp = require('sharp');
 
 dotenv.config();
 
 // Default settings for easy access and modification
 const DEFAULT_OPTIONS = {
-  limit: 200,             // Number of images to download (max per page)
+  limit: 60,             // Number of images to download (max per page)
   imageSize: 'large',    // Size of images: 'original', 'large', 'medium'
   order: 'latest',      // 'popular' or 'latest'
-  imageType: 'all',   // 'photo', 'illustration', 'vector', or 'all'
+  imageType: 'vector',  // 'photo', 'illustration', 'vector', or 'all'
   orientation: 'horizontal', // 'horizontal', 'vertical', or 'all'
   safeSearch: true,      // Whether to enable safe search
   perPage: 200,          // Number of results per page in API request (max 200)
-  page: 1                // Page number to download from
+  page: 1,                // Page number to download from
+  // Image processing options
+  processImages: true,   // Whether to process images with Sharp
+  outputFormat: 'webp',  // Output format: 'webp', 'jpeg', 'png'
+  outputWidth: 1000,     // Target width in pixels
+  webpQuality: 80        // WebP quality (0-100, higher is better quality)
 };
 
 class ImageGenerator {
@@ -29,10 +35,11 @@ class ImageGenerator {
   async ensureDirectories() {
     // Create base directories
     await fs.mkdir('outputs', { recursive: true });
-    await fs.mkdir(path.join('outputs', 'images'), { recursive: true });
+    // Create image library as sibling of outputs
+    await fs.mkdir('image-library', { recursive: true });
     // Create pixabay-specific directory and subdirectories
-    await fs.mkdir(path.join('outputs', 'images', 'pixabay'), { recursive: true });
-    await fs.mkdir(path.join('outputs', 'images', 'pixabay', 'states'), { recursive: true });
+    await fs.mkdir(path.join('image-library', 'pixabay'), { recursive: true });
+    await fs.mkdir(path.join('image-library', 'pixabay', 'states'), { recursive: true });
   }
 
   /**
@@ -90,7 +97,7 @@ class ImageGenerator {
    * @param {string} url - Image URL
    * @param {string} filename - Destination filename
    */
-  async downloadImage(url, filename) {
+  async downloadImage(url, filename, options = {}) {
     try {
       const response = await axios({
         method: 'GET',
@@ -98,10 +105,51 @@ class ImageGenerator {
         responseType: 'arraybuffer'
       });
 
-      await fs.writeFile(filename, response.data);
-      console.log(`Downloaded: ${filename}`);
+      // Process the image if enabled
+      if (options.processImages) {
+        const outputFormat = options.outputFormat || DEFAULT_OPTIONS.outputFormat;
+        const outputWidth = options.outputWidth || DEFAULT_OPTIONS.outputWidth;
+        const quality = options.webpQuality || DEFAULT_OPTIONS.webpQuality;
+        
+        // Get file extension from the format
+        const fileExt = outputFormat;
+        
+        // Change the file extension in the filename
+        const baseFilename = path.parse(filename).name;
+        const newFilename = path.join(path.dirname(filename), `${baseFilename}.${fileExt}`);
+        
+        // Process image with Sharp
+        console.log(`Processing image to ${outputFormat} format at ${outputWidth}px width...`);
+        
+        const processedImage = sharp(response.data)
+          .resize({ 
+            width: outputWidth,
+            withoutEnlargement: true // Don't enlarge images smaller than target size
+          });
+          
+        // Set format-specific options
+        if (outputFormat === 'webp') {
+          processedImage.webp({ quality });
+        } else if (outputFormat === 'jpeg') {
+          processedImage.jpeg({ quality });
+        } else if (outputFormat === 'png') {
+          processedImage.png({ quality });
+        }
+        
+        // Save the processed image
+        await processedImage.toFile(newFilename);
+        console.log(`Processed and saved: ${newFilename}`);
+        
+        // Return the new filename for metadata tracking
+        return newFilename;
+      } else {
+        // Save the original image without processing
+        await fs.writeFile(filename, response.data);
+        console.log(`Downloaded: ${filename}`);
+        return filename;
+      }
     } catch (error) {
-      console.error(`Error downloading ${url}:`, error.message);
+      console.error(`Error downloading/processing ${url}:`, error.message);
       throw error;
     }
   }
@@ -117,7 +165,7 @@ class ImageGenerator {
 
       // Create a directory for this tag set
       const dirName = tags.replace(/,/g, '-').replace(/\s+/g, '_');
-      const outputDir = path.join('outputs', 'images', 'pixabay', dirName);
+      const outputDir = path.join('image-library', 'pixabay', dirName);
       const jsonDir = path.join(outputDir, 'json');
       
       // Create main directory and json subdirectory
@@ -157,8 +205,11 @@ class ImageGenerator {
         const filename = `${image.id}_${image.user}_${dirName}.jpg`;
         const outputPath = path.join(outputDir, filename);
         
-        // Download the image to the main directory
-        await this.downloadImage(imageUrl, outputPath);
+        // Download and process the image
+        const actualFilename = await this.downloadImage(imageUrl, outputPath, options);
+        
+        // Use the actual filename (which may have a different extension after processing)
+        const savedFilename = path.basename(actualFilename);
         
         // Save metadata to the json subdirectory
         const metadata = {
@@ -172,7 +223,9 @@ class ImageGenerator {
           imageWidth: image.imageWidth,
           imageHeight: image.imageHeight,
           downloaded: new Date().toISOString(),
-          filename: filename
+          filename: savedFilename,
+          processed: options.processImages || DEFAULT_OPTIONS.processImages,
+          format: options.outputFormat || DEFAULT_OPTIONS.outputFormat
         };
         
         await fs.writeFile(
@@ -226,7 +279,7 @@ class ImageGenerator {
   async saveSearchState(tags, page, imageType) {
     try {
       const searchKey = tags.replace(/,/g, '-').replace(/\s+/g, '_').toLowerCase();
-      const stateDir = path.join('outputs', 'images', 'pixabay', 'states');
+      const stateDir = path.join('image-library', 'pixabay', 'states');
       await fs.mkdir(stateDir, { recursive: true });
       
       const stateFile = path.join(stateDir, `${searchKey}_state.json`);
@@ -250,7 +303,7 @@ class ImageGenerator {
    */
   async listSearchStates() {
     try {
-      const stateDir = path.join('outputs', 'images', 'pixabay', 'states');
+      const stateDir = path.join('image-library', 'pixabay', 'states');
       await fs.mkdir(stateDir, { recursive: true });
       
       const files = await fs.readdir(stateDir);

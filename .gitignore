@@ -12,7 +12,7 @@ yarn-error.log
 
 # Output directories
 outputs/
-
+image-library/
 # Logs
 *.log
 

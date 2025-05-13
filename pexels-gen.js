@@ -2,6 +2,7 @@ const axios = require('axios');
 const fs = require('fs/promises');
 const path = require('path');
 const dotenv = require('dotenv');
+const sharp = require('sharp');
 
 dotenv.config();
 
@@ -14,7 +15,12 @@ const DEFAULT_OPTIONS = {
   color: '',             // Optional color filter (e.g., 'red', 'blue', etc.)
   locale: 'en-US',       // Locale for the search results
   page: 1,               // Page number to fetch
-  size: 'large'          // 'small', 'medium', 'large' or specific dimensions like '400x400'
+  size: 'large',         // 'small', 'medium', 'large' or specific dimensions like '400x400'
+  // Image processing options
+  processImages: true,   // Whether to process images with Sharp
+  outputFormat: 'webp',   // Output format: 'webp', 'jpeg', 'png'
+  outputWidth: 1000,      // Target width in pixels
+  webpQuality: 80         // WebP quality (0-100, higher is better quality)
 };
 
 class PexelsImageGenerator {
@@ -29,10 +35,11 @@ class PexelsImageGenerator {
   async ensureDirectories() {
     // Create base directories
     await fs.mkdir('outputs', { recursive: true });
-    await fs.mkdir(path.join('outputs', 'images'), { recursive: true });
+    // Create image library as sibling of outputs
+    await fs.mkdir('image-library', { recursive: true });
     // Create pexels-specific directory and subdirectories
-    await fs.mkdir(path.join('outputs', 'images', 'pexels'), { recursive: true });
-    await fs.mkdir(path.join('outputs', 'images', 'pexels', 'states'), { recursive: true });
+    await fs.mkdir(path.join('image-library', 'pexels'), { recursive: true });
+    await fs.mkdir(path.join('image-library', 'pexels', 'states'), { recursive: true });
   }
 
   /**
@@ -118,7 +125,7 @@ class PexelsImageGenerator {
    * @param {string} url - Image URL
    * @param {string} filename - Destination filename
    */
-  async downloadImage(url, filename) {
+  async downloadImage(url, filename, options = {}) {
     try {
       const response = await axios({
         method: 'GET',
@@ -126,10 +133,51 @@ class PexelsImageGenerator {
         responseType: 'arraybuffer'
       });
 
-      await fs.writeFile(filename, response.data);
-      console.log(`Downloaded: ${filename}`);
+      // Process the image if enabled
+      if (options.processImages) {
+        const outputFormat = options.outputFormat || DEFAULT_OPTIONS.outputFormat;
+        const outputWidth = options.outputWidth || DEFAULT_OPTIONS.outputWidth;
+        const quality = options.webpQuality || DEFAULT_OPTIONS.webpQuality;
+        
+        // Get file extension from the format
+        const fileExt = outputFormat;
+        
+        // Change the file extension in the filename
+        const baseFilename = path.parse(filename).name;
+        const newFilename = path.join(path.dirname(filename), `${baseFilename}.${fileExt}`);
+        
+        // Process image with Sharp
+        console.log(`Processing image to ${outputFormat} format at ${outputWidth}px width...`);
+        
+        const processedImage = sharp(response.data)
+          .resize({ 
+            width: outputWidth,
+            withoutEnlargement: true // Don't enlarge images smaller than target size
+          });
+          
+        // Set format-specific options
+        if (outputFormat === 'webp') {
+          processedImage.webp({ quality });
+        } else if (outputFormat === 'jpeg') {
+          processedImage.jpeg({ quality });
+        } else if (outputFormat === 'png') {
+          processedImage.png({ quality });
+        }
+        
+        // Save the processed image
+        await processedImage.toFile(newFilename);
+        console.log(`Processed and saved: ${newFilename}`);
+        
+        // Return the new filename for metadata tracking
+        return newFilename;
+      } else {
+        // Save the original image without processing
+        await fs.writeFile(filename, response.data);
+        console.log(`Downloaded: ${filename}`);
+        return filename;
+      }
     } catch (error) {
-      console.error(`Error downloading ${url}:`, error.message);
+      console.error(`Error downloading/processing ${url}:`, error.message);
       throw error;
     }
   }
@@ -167,7 +215,7 @@ class PexelsImageGenerator {
 
       // Create a directory for this query
       const dirName = query.replace(/,/g, '-').replace(/\s+/g, '_').toLowerCase();
-      const outputDir = path.join('outputs', 'images', 'pexels', dirName);
+      const outputDir = path.join('image-library', 'pexels', dirName);
       const jsonDir = path.join(outputDir, 'json');
       
       // Create main directory and json subdirectory
@@ -199,13 +247,16 @@ class PexelsImageGenerator {
         // Get the appropriate URL for the selected size
         const imageUrl = this.getImageUrlBySize(photo, imageSize);
 
-        // Create a descriptive filename (Pexels ID + photographer + query)
+        // Create a descriptive filename
         const safePhotographerName = photo.photographer.replace(/\s+/g, '_').toLowerCase();
         const filename = `${photo.id}_${safePhotographerName}_${dirName}.jpg`;
         const outputPath = path.join(outputDir, filename);
         
-        // Download the image to the main directory
-        await this.downloadImage(imageUrl, outputPath);
+        // Download and process the image
+        const actualFilename = await this.downloadImage(imageUrl, outputPath, options);
+        
+        // Use the actual filename (which may have a different extension after processing)
+        const savedFilename = path.basename(actualFilename);
         
         // Save metadata to the json subdirectory
         const metadata = {
@@ -217,10 +268,12 @@ class PexelsImageGenerator {
           photographer_url: photo.photographer_url,
           photographer_id: photo.photographer_id,
           avg_color: photo.avg_color,
-          src: photo.src, // URLs for all available sizes
+          src: photo.src,
           alt: photo.alt,
           downloaded: new Date().toISOString(),
-          filename: filename
+          filename: savedFilename,
+          processed: options.processImages || DEFAULT_OPTIONS.processImages,
+          format: options.outputFormat || DEFAULT_OPTIONS.outputFormat
         };
         
         await fs.writeFile(
@@ -275,7 +328,7 @@ class PexelsImageGenerator {
   async saveSearchState(query, page, useCurated) {
     try {
       const searchKey = query.replace(/,/g, '-').replace(/\s+/g, '_').toLowerCase();
-      const stateDir = path.join('outputs', 'images', 'pexels', 'states');
+      const stateDir = path.join('image-library', 'pexels', 'states');
       await fs.mkdir(stateDir, { recursive: true });
       
       const stateFile = path.join(stateDir, `${searchKey}_state.json`);
@@ -304,7 +357,7 @@ class PexelsImageGenerator {
    */
   async listSearchStates() {
     try {
-      const stateDir = path.join('outputs', 'images', 'pexels', 'states');
+      const stateDir = path.join('image-library', 'pexels', 'states');
       await fs.mkdir(stateDir, { recursive: true });
       
       const files = await fs.readdir(stateDir);

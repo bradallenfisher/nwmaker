@@ -1,4 +1,4 @@
-{spin}="Find timeless playbooks, tool reviews, and data-backed tips for attracting, qualifying, and converting leads, so your team can focus on closing deals. Subscribe to learn how consistent, smart lead generation keeps your pipeline healthy year-round."
-{website}="https://leadcraftr.com"
+{spin}="The 1990s were a golden era for self-help and lifestyle gurus who reshaped how we thought about personal growth, fitness, and success. From the upbeat workouts of Richard Simmons and Denise Austin to the high-energy Tae Bo sessions with Billy Blanks, fitness took center stage. Susan Powter became a cultural icon with her 'Stop the Insanity' mantra, while Tony Robbins taught millions how to reframe their mindset using strategies like the 90-Second Rule. But the influence didn’t stop at physical health. Visionaries like Wayne Dyer, Deepak Chopra, and Eckhart Tolle began transforming spiritual and emotional wellness as well. These voices sparked a movement—and today, we’re revisiting their insights to see how they align with the new wave of modern digital gurus. Join us as we explore the parallels between then and now, and uncover what timeless wisdom still holds true in a fast-moving world."
+{website}="https://supertotallyawesome.com"
 {search_intent}="Informational"
 {page_type}="Blog Post"
