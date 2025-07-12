@@ -35,7 +35,7 @@ class BulkGenerator {
         }
       }
     );
-    
+
     // Add this debugging line to check if ideas and question data exists
     console.log('NeuronWriter data structure:', JSON.stringify({
       hasIdeas: !!response.data.ideas,
@@ -45,7 +45,7 @@ class BulkGenerator {
         hasContentQuestions: !!response.data.ideas.content_questions
       } : null
     }, null, 2));
-    
+
     return response.data;
   }
 
@@ -62,9 +62,9 @@ class BulkGenerator {
       ...data.terms.h1.map(t => t.t),
       ...data.terms.h2.map(t => t.t)
     ].join('\n');
-    
+
     const basicTermsList = data.terms.content_basic.map(t => t.t).join(', ');
-    
+
     // Format entities with their metrics
     const entitiesList = data.terms.entities
       .map(e => `${e.t} (importance: ${e.importance.toFixed(2)}, relevance: ${e.relevance.toFixed(2)}, confidence: ${e.confidence.toFixed(2)})`)
@@ -87,7 +87,7 @@ class BulkGenerator {
       } catch (error) {
         if (error.message?.includes("overloaded") && attempt < maxRetries) {
           const delay = baseDelay * Math.pow(2, attempt - 1);
-          console.log(`Model overloaded, retrying in ${delay/1000} seconds... (Attempt ${attempt}/${maxRetries})`);
+          console.log(`Model overloaded, retrying in ${delay / 1000} seconds... (Attempt ${attempt}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
@@ -117,17 +117,17 @@ class BulkGenerator {
       // Read from inputs directory
       const topContent = await fs.readFile(path.join('inputs', 'prompt-top.txt'), 'utf8');
       let prompt = topContent + '\n\n';
-      
+
       // Add main keyword from NeuronWriter data
       prompt += `{main_keyword}="\n${data.keyword}\n"\n\n`;
-      
+
       // Add competitor URLs from NeuronWriter data (limit to first 10)
       const competitorUrls = data.competitors.slice(0, 10).map(c => c.url);
       prompt += `{competitor_urls}="\n${competitorUrls.join('\n')}\n"\n\n`;
-      
+
       // Add outline
       prompt += `{outline}="\n${outline}\n"\n\n`;
-      
+
       // Add keywords section using terms data
       prompt += `{listofkeywords}="\n`;
       prompt += `TITLE TERMS: ==========\n${data.terms.title.map(t => t.t).join('\n')}\n\n`;
@@ -136,10 +136,10 @@ class BulkGenerator {
       prompt += `H2 HEADERS TERMS: ==========\n${data.terms.h2.map(t => t.t).join('\n')}\n\n`;
       prompt += `BASIC TEXT TERMS: ==========\n${data.terms.content_basic.map(t => t.t).join('\n')}\n\n`;
       prompt += `EXTENDED TEXT TERMS: ==========\n${data.terms.content_extended.map(t => t.t).join('\n')}\n"\n\n`;
-      
+
       // Add questions section - make sure this part is correctly implemented
       prompt += `{questions}="\n`;
-      
+
       // Add suggested questions if they exist
       if (data.ideas && data.ideas.suggest_questions && data.ideas.suggest_questions.length > 0) {
         prompt += `SUGGEST QUESTIONS: ==========\n`;
@@ -148,7 +148,7 @@ class BulkGenerator {
         });
         prompt += `\n`;
       }
-      
+
       // Add people also ask questions if they exist
       if (data.ideas && data.ideas.people_also_ask && data.ideas.people_also_ask.length > 0) {
         prompt += `PAA QUESTIONS: ==========\n`;
@@ -157,7 +157,7 @@ class BulkGenerator {
         });
         prompt += `\n`;
       }
-      
+
       // Add content questions if they exist
       if (data.ideas && data.ideas.content_questions && data.ideas.content_questions.length > 0) {
         prompt += `CONTENT QUESTIONS: ==========\n`;
@@ -166,10 +166,10 @@ class BulkGenerator {
         });
         prompt += `\n`;
       }
-      
+
       // Close the questions section
       prompt += `"\n\n`;
-      
+
       // Read and append the commands from inputs directory
       const commands = await fs.readFile(path.join('inputs', 'prompt-commands.txt'), 'utf8');
       prompt += commands;
@@ -211,7 +211,7 @@ class BulkGenerator {
       ...data.terms.h1.map(t => t.t),
       ...data.terms.h2.map(t => t.t)
     ].join('\n');
-    
+
     const basicTermsList = data.terms.content_basic.map(t => t.t).join(', ');
     const entitiesList = data.terms.entities
       .map(e => `${e.t} (importance: ${e.importance.toFixed(2)}, relevance: ${e.relevance.toFixed(2)}, confidence: ${e.confidence.toFixed(2)})`)
@@ -219,7 +219,7 @@ class BulkGenerator {
 
     // Format questions for the bulk titles prompt
     let questionsText = '';
-    
+
     // Add suggested questions if they exist
     if (data.ideas && data.ideas.suggest_questions && data.ideas.suggest_questions.length > 0) {
       questionsText += `SUGGEST QUESTIONS:\n`;
@@ -228,7 +228,7 @@ class BulkGenerator {
       });
       questionsText += `\n`;
     }
-    
+
     // Add people also ask questions if they exist
     if (data.ideas && data.ideas.people_also_ask && data.ideas.people_also_ask.length > 0) {
       questionsText += `PEOPLE ALSO ASK QUESTIONS:\n`;
@@ -237,7 +237,7 @@ class BulkGenerator {
       });
       questionsText += `\n`;
     }
-    
+
     // Add content questions if they exist
     if (data.ideas && data.ideas.content_questions && data.ideas.content_questions.length > 0) {
       questionsText += `CONTENT QUESTIONS:\n`;
@@ -253,12 +253,12 @@ class BulkGenerator {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-      
+
       // Create keyword directory first, then md and html subdirectories
       const keywordDir = path.join('outputs', 'bulk', safeFilename);
       const mdDir = path.join(keywordDir, 'md');
       const htmlDir = path.join(keywordDir, 'html');
-      
+
       await fs.mkdir(keywordDir, { recursive: true });
       await fs.mkdir(mdDir, { recursive: true });
       await fs.mkdir(htmlDir, { recursive: true });
@@ -275,7 +275,7 @@ class BulkGenerator {
 
       const titlesResponse = await this.aiProvider.generateContent(titlePrompt);
       const titles = titlesResponse.split('\n').filter(line => line.trim());
-      
+
       // Save titles for reference in the keyword directory with metadata
       const titlesData = {
         keyword: data.keyword,
@@ -285,23 +285,23 @@ class BulkGenerator {
         }
       };
       await fs.writeFile(
-        path.join(keywordDir, 'titles.json'), 
+        path.join(keywordDir, 'titles.json'),
         JSON.stringify(titlesData, null, 2)
       );
 
       // Step 2: Generate an article for each title
       console.log('Generating articles for each title...');
       let articlePromptTemplate = await fs.readFile(path.join('inputs', 'prompt-bulk.txt'), 'utf8');
-      
+
       for (let i = 0; i < titles.length; i++) {
         const title = titles[i];
         console.log(`Generating article ${i + 1} of ${titles.length}: ${title}`);
-        
+
         const safeTitle = title
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-+|-+$/g, '');
-        
+
         let articlePrompt = articlePromptTemplate
           .replace('{title}', title)
           .replace('{keyword}', data.keyword)
@@ -338,7 +338,7 @@ class BulkGenerator {
 
         const markdownPath = path.join(mdDir, `${safeTitle}.md`);
         const htmlPath = path.join(htmlDir, `${safeTitle}.html`);
-        
+
         await fs.writeFile(markdownPath, markdownContent);
         await fs.writeFile(htmlPath, htmlContent);
 
@@ -378,10 +378,10 @@ class BulkGenerator {
 
       console.log('Generating outline with AI...');
       const outline = await this.generateOutlineWithAI(nwData);
-      
+
       console.log('Creating prompt file...');
       const prompt = await this.formatPromptData(nwData, outline);
-      
+
       // Create metadata object
       const outputData = {
         prompt,
@@ -390,7 +390,7 @@ class BulkGenerator {
           keyword: nwData.keyword
         }
       };
-      
+
       // Save to outputs directory with metadata using .json extension
       const outputPath = path.join('outputs', `${safeFilename}-prompt.json`);
       await fs.writeFile(outputPath, JSON.stringify(outputData, null, 2));
@@ -401,10 +401,10 @@ class BulkGenerator {
         // Create questions directory if it doesn't exist
         const questionsDir = path.join('outputs', 'questions');
         await fs.mkdir(questionsDir, { recursive: true });
-        
+
         // Combine all questions into a single array with their source
         const allQuestions = [];
-        
+
         if (nwData.ideas.suggest_questions && nwData.ideas.suggest_questions.length > 0) {
           nwData.ideas.suggest_questions.forEach(item => {
             allQuestions.push({
@@ -414,7 +414,7 @@ class BulkGenerator {
             });
           });
         }
-        
+
         if (nwData.ideas.people_also_ask && nwData.ideas.people_also_ask.length > 0) {
           nwData.ideas.people_also_ask.forEach(item => {
             allQuestions.push({
@@ -424,7 +424,7 @@ class BulkGenerator {
             });
           });
         }
-        
+
         if (nwData.ideas.content_questions && nwData.ideas.content_questions.length > 0) {
           nwData.ideas.content_questions.forEach(item => {
             allQuestions.push({
@@ -434,7 +434,7 @@ class BulkGenerator {
             });
           });
         }
-        
+
         // Save questions data with query ID and metadata
         const questionsData = {
           queryId,
@@ -444,7 +444,7 @@ class BulkGenerator {
             generatedAt: new Date().toISOString()
           }
         };
-        
+
         const questionsPath = path.join(questionsDir, `questions-${queryId}.json`);
         await fs.writeFile(questionsPath, JSON.stringify(questionsData, null, 2));
         console.log(`Questions data saved to ${questionsPath}`);
@@ -490,7 +490,7 @@ class BulkGenerator {
           }
         }
       );
-      
+
       console.log('API Response:', JSON.stringify(response.data, null, 2));
       return response.data;
     } catch (error) {
@@ -510,8 +510,8 @@ const runSingleQuery = async (queryId) => {
 
   const nwApiKey = process.env.NEURONWRITER_API_KEY;
   const aiProviderType = process.env.AI_PROVIDER || 'gemini';
-  const aiProviderKey = aiProviderType === 'gemini' ? 
-    process.env.GEMINI_API_KEY : 
+  const aiProviderKey = aiProviderType === 'gemini' ?
+    process.env.GEMINI_API_KEY :
     process.env.OPENAI_API_KEY;
 
   if (!nwApiKey || !aiProviderKey) {
@@ -520,7 +520,7 @@ const runSingleQuery = async (queryId) => {
   }
 
   const bulkGenerator = new BulkGenerator(nwApiKey, aiProviderType, aiProviderKey);
-  
+
   try {
     console.log(`Processing single query: ${queryId}`);
     await bulkGenerator.run(queryId);
@@ -541,8 +541,8 @@ const runProject = async (projectId, tags = []) => {
 
   const nwApiKey = process.env.NEURONWRITER_API_KEY;
   const aiProviderType = process.env.AI_PROVIDER || 'gemini';
-  const aiProviderKey = aiProviderType === 'gemini' ? 
-    process.env.GEMINI_API_KEY : 
+  const aiProviderKey = aiProviderType === 'gemini' ?
+    process.env.GEMINI_API_KEY :
     process.env.OPENAI_API_KEY;
 
   if (!nwApiKey || !aiProviderKey) {
@@ -551,23 +551,23 @@ const runProject = async (projectId, tags = []) => {
   }
 
   const bulkGenerator = new BulkGenerator(nwApiKey, aiProviderType, aiProviderKey);
-  
+
   try {
     console.log(`Fetching queries for project ${projectId}${tags.length ? ` with tags: ${tags.join(', ')}` : ''}...`);
     const queries = await bulkGenerator.getProjectQueries(projectId, tags);
-    
+
     if (!queries || queries.length === 0) {
       console.log('No queries found matching the criteria.');
       return;
     }
 
     console.log(`Found ${queries.length} queries to process.`);
-    
+
     for (const query of queries) {
       console.log(`\nProcessing query for keyword: ${query.keyword}`);
       await bulkGenerator.run(query.query);
     }
-    
+
     console.log('\nAll queries processed successfully!');
   } catch (error) {
     console.error('Error:', error instanceof Error ? error.message : error);

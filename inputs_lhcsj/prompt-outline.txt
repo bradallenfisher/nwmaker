@@ -1,0 +1,20 @@
+Create a detailed content outline for a Press Release about {keyword}.
+
+Key Information to Consider:
+1. Title-Focused Terms: {titleTermsList}
+2. Core Content Terms: {basicTermsList}
+3. Questions from {questions}.
+4. Key Entities and their Metrics: {entitiesList}
+
+The outline should:
+- Only ever contain 1 level one heading. The level 1 heading should always be the title of the article.
+- Use level 2 headings for the remaining items in the outline.
+- Contain enough headings to use all the {titleTermsList}.
+- Include at least 2 level 2 headings as CTAs (e.g., 'Get Connected with the Living Hope Church') placed near the middle and end of the outline.
+- Use the provided {questions} to create a FAQ section, but do not include 'FAQ' in the heading text. Each question should be a level 2 heading.
+- Be formatted using markdown with # for the title, and ## for level 2.
+- Never contain bold items, strong items, lists, or other formatting.
+- Prioritize covering {entitiesList} with higher importance and relevance scores.
+- Try to reflect these {entitiesList} in section topics if relevant
+- Contain headings that strengthen topic.
+- End with a conclusion about the {keyword}.

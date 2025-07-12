@@ -8,7 +8,7 @@ dotenv.config();
 
 // Default settings for easy access and modification
 const DEFAULT_OPTIONS = {
-  limit: 80,             // Number of images to download
+  limit: 50,             // Number of images to download
   imageSize: 'large',    // Size of images: 'original', 'large', 'medium', 'small'
   orientation: 'landscape', // 'landscape', 'portrait', or 'square'
   perPage: 80,           // Number of results per page in API request (max 80)

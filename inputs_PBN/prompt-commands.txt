@@ -1,6 +1,5 @@
 Create a {page_type} that will help people understand the current {main_keyword}.
 Visit the URLs in {competitor_urls}. Analyze what topics they include, what questions they answer, and what visuals or examples they use. Use this to ensure our content is more complete and helpful, covering gaps they miss.
-Read {spin} to understand the writers objective.
 Read all items in the {questions} section.
 All content we are writing should help the reader with their search intent.
 {questions} should serve as a map to help you understand why a user would search {main_keyword}.
@@ -9,7 +8,6 @@ I want you to write content for the topic of {main_keyword}.
 The {page_type} that you write should use {outline} as the outline.
 Be sure to use the heading levels presented in the markdown when expanding the {outline}.
 Use the list items in the {outline} for section explanations.
-When expanding each item in the {outline}, keep the tone natural, friendly, and informative. Avoid jargon unless it’s explained in plain language.
 Please turn them into paragraphs that are short and easy to read.
 Using {outline} continue to create this page with the following commands:
 You are speaking to 12th-grade level students.

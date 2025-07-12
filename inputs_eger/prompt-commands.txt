@@ -1,18 +1,16 @@
-Create a {page_type} that will help people understand our {business}.
-Gather all necessary information from {competitor_urls} and {website} before you begin writing.
-All content we are writing is to support {website}.
-I want you to spin this {page_type} based on the string in {spin}.
-I want you to act as a very proficient SEO expert and high-end content creator.
-It is your role as an SEO expert to know how to optimize on-page SEO content as you write it.
+Create a {page_type} that will help people understand the current {main_keyword}.
+Visit the URLs in {competitor_urls}. Analyze what topics they include, what questions they answer, and what visuals or examples they use. Use this to ensure our content is more complete and helpful, covering gaps they miss.
+Read {spin} to understand the writers objective.
+Read all items in the {questions} section.
+All content we are writing should help the reader with their search intent.
+{questions} should serve as a map to help you understand why a user would search {main_keyword}.
 You are the lead content creator for a marketing firm working for {website}.
 I want you to write content for the topic of {main_keyword}.
-The main objective of this page is to satisfy the query {main_keyword}.
-Do your best to provide the reader with content based on {search_intent}.
-The page that you write should use {outline} as the outline.
+The {page_type} that you write should use {outline} as the outline.
 Be sure to use the heading levels presented in the markdown when expanding the {outline}.
-Use the list items in the {outline} for section explanations. 
-Please turn them into paragraphs that are easy to read.
-Link to {website} in the conclusion paragraph.
+Use the list items in the {outline} for section explanations.
+When expanding each item in the {outline}, keep the tone natural, friendly, and informative. Avoid jargon unless it’s explained in plain language.
+Please turn them into paragraphs that are short and easy to read.
 Using {outline} continue to create this page with the following commands:
 You are speaking to 12th-grade level students.
 Your sentences are short and sweet.
@@ -26,7 +24,6 @@ Write using a conversational style.
 This list of commands should not override {outline} but should be considered when writing paragraphs that support each {outline} item.
 Headings, links, and lists should contain markdown language.
 {listofkeywords} is a pool of terms to choose from when writing the sections for the page.
-
 All {outline} items should be created with markdown using heading format.
 The first letter of each heading should be capitalized.
 Do not print out placeholder text or symbols. ({}) etc...

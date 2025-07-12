@@ -4,10 +4,11 @@ const sharp = require('sharp');
 
 // Default processing options
 const DEFAULT_OPTIONS = {
-  outputFormat: 'webp',  // Output format: 'webp', 'jpeg', 'png'
-  outputWidth: 1000,     // Target width in pixels
-  webpQuality: 80,       // WebP quality (0-100, higher is better quality)
-  deleteOriginals: false // Whether to delete original images after processing
+  outputFormat: 'webp',    // Output format: 'webp', 'jpeg', 'png'
+  outputWidth: 1000,       // Target width in pixels
+  webpQuality: 80,         // WebP quality (0-100, higher is better quality)
+  deleteOriginals: false,  // Whether to delete original images after processing
+  processAll: true         // Process all images regardless of current format
 };
 
 /**
@@ -26,8 +27,8 @@ async function processImagesInDirectory(inputDir, options = {}) {
     // Get all files in the directory
     const files = await fs.readdir(inputDir);
     
-    // Filter for image files (simple extension-based check)
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'];
+    // Filter for image files
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'];
     const imageFiles = files.filter(file => {
       const ext = path.extname(file).toLowerCase();
       return imageExtensions.includes(ext);
@@ -48,25 +49,24 @@ async function processImagesInDirectory(inputDir, options = {}) {
     for (const file of imageFiles) {
       const inputPath = path.join(inputDir, file);
       const fileInfo = path.parse(file);
-      const outputFilename = `${fileInfo.name}.${settings.outputFormat}`;
-      const outputPath = path.join(inputDir, outputFilename);
       
-      // Skip if output file already exists and has the same name
-      if (file === outputFilename) {
-        console.log(`Skipping already processed file: ${file}`);
-        skipped++;
-        continue;
-      }
+      // Create a unique temporary output filename to avoid conflicts
+      const timestamp = Date.now();
+      const tempOutputFilename = `${fileInfo.name}_temp_${timestamp}.${settings.outputFormat}`;
+      const tempOutputPath = path.join(inputDir, tempOutputFilename);
+      
+      // Final output filename (same name but with the target extension)
+      const finalOutputFilename = `${fileInfo.name}.${settings.outputFormat}`;
+      const finalOutputPath = path.join(inputDir, finalOutputFilename);
       
       try {
-        console.log(`Processing: ${file} -> ${outputFilename}`);
+        console.log(`Processing: ${file} -> ${finalOutputFilename}`);
         
         // Create a Sharp instance with the input file
         const image = sharp(inputPath);
         
         // Get image metadata
         const metadata = await image.metadata();
-        console.log(`Original image: ${metadata.width}x${metadata.height} ${metadata.format}`);
         
         // Process the image
         const processedImage = image
@@ -84,80 +84,90 @@ async function processImagesInDirectory(inputDir, options = {}) {
           processedImage.png({ quality: settings.webpQuality });
         }
         
-        // Save the processed image
-        await processedImage.toFile(outputPath);
+        // Save the processed image to temporary file first
+        await processedImage.toFile(tempOutputPath);
         
-        // Get stats of both files to calculate size reduction
+        // Get stats to calculate size reduction
         const originalStat = await fs.stat(inputPath);
-        const processedStat = await fs.stat(outputPath);
+        const processedStat = await fs.stat(tempOutputPath);
         const reduction = (1 - (processedStat.size / originalStat.size)) * 100;
         
-        console.log(`Saved: ${outputFilename} (${processedStat.size} bytes, ${reduction.toFixed(1)}% reduction)`);
-        
-        // Delete original if requested
-        if (settings.deleteOriginals && fileInfo.ext.toLowerCase() !== `.${settings.outputFormat}`) {
+        // If input file has the same name as the final output file, we need to:
+        // 1. Delete the original (if it's not the same file)
+        // 2. Rename the temp file to the final name
+        if (file !== finalOutputFilename) {
+          // Different filename - delete original if requested
+          if (settings.deleteOriginals) {
+            await fs.unlink(inputPath);
+            console.log(`Deleted original: ${file}`);
+          }
+          // Rename temp to final
+          await fs.rename(tempOutputPath, finalOutputPath);
+        } else {
+          // Same filename - need to replace original with temp
           await fs.unlink(inputPath);
-          console.log(`Deleted original: ${file}`);
+          await fs.rename(tempOutputPath, finalOutputPath);
         }
         
+        console.log(`Saved: ${finalOutputFilename} (${processedStat.size} bytes, ${reduction.toFixed(1)}% reduction)`);
         processed++;
-      } catch (err) {
-        console.error(`Error processing ${file}:`, err.message);
+      } catch (error) {
+        console.error(`Error processing ${file}:`, error.message);
+        
+        // Clean up temp file if it exists
+        try {
+          await fs.access(tempOutputPath);
+          await fs.unlink(tempOutputPath);
+        } catch (e) {
+          // Temp file doesn't exist or couldn't be deleted, ignore
+        }
+        
         errors++;
       }
     }
     
-    console.log('\nProcessing complete!');
-    console.log(`Processed: ${processed} images`);
-    console.log(`Skipped: ${skipped} images`);
-    console.log(`Errors: ${errors} images`);
-    
+    console.log(`Processing complete: ${processed} processed, ${skipped} skipped, ${errors} errors`);
   } catch (error) {
     console.error('Error processing directory:', error.message);
   }
 }
 
-// Main execution function
-async function run() {
-  try {
-    // Parse command line arguments
-    const args = process.argv.slice(2);
-    
-    if (args.length === 0) {
-      console.error('Please provide a directory to process');
-      console.error('Usage: node process-images.js <directory> [options]');
-      console.error('Example: node process-images.js ./image-library/pixabay/nature --outputFormat=webp --outputWidth=1000');
-      process.exit(1);
-    }
-    
-    // First argument is the directory
-    const inputDir = args[0];
-    
-    // Parse options from remaining arguments
-    const options = {};
-    for (let i = 1; i < args.length; i++) {
-      const arg = args[i];
-      if (arg.startsWith('--')) {
-        const [key, value] = arg.slice(2).split('=');
-        // Convert numeric values
-        if (!isNaN(value)) {
-          options[key] = parseInt(value);
-        } else if (value === 'true' || value === 'false') {
-          options[key] = value === 'true';
-        } else {
-          options[key] = value;
-        }
-      }
-    }
-    
-    // Process the directory
-    await processImagesInDirectory(inputDir, options);
-    
-  } catch (error) {
-    console.error('Error:', error.message);
+// CLI interface
+async function main() {
+  // Get directory from command line arguments
+  const args = process.argv.slice(2);
+  const inputDir = args[0];
+  
+  if (!inputDir) {
+    console.error('Usage: node process-images.js <directory-path> [options]');
+    console.error('Options:');
+    console.error('  --format=<webp|jpeg|png>  Output format (default: webp)');
+    console.error('  --width=<pixels>          Target width (default: 1000)');
+    console.error('  --quality=<0-100>         Quality (default: 80)');
+    console.error('  --delete-originals        Delete original files after processing');
     process.exit(1);
   }
+  
+  // Parse options
+  const options = {};
+  args.slice(1).forEach(arg => {
+    if (arg.startsWith('--format=')) {
+      options.outputFormat = arg.split('=')[1];
+    } else if (arg.startsWith('--width=')) {
+      options.outputWidth = parseInt(arg.split('=')[1]);
+    } else if (arg.startsWith('--quality=')) {
+      options.webpQuality = parseInt(arg.split('=')[1]);
+    } else if (arg === '--delete-originals') {
+      options.deleteOriginals = true;
+    }
+  });
+  
+  await processImagesInDirectory(inputDir, options);
 }
 
-// Run the script
-run();
+// Run if called directly
+if (require.main === module) {
+  main();
+}
+
+module.exports = { processImagesInDirectory };

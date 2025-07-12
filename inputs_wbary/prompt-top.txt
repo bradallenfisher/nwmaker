@@ -1,5 +1,31 @@
-{spin}="For over 45 years, W-Bar-Y Fence has been the trusted name for securing and beautifying properties in the Springfield and Branson area. We're experienced professionals installing high-quality fences – residential, commercial, or industrial – along with decks and pergolas. When you need reliable service and lasting quality, think W-Bar-Y."
+{spin}="the objective of this piece of content is to amplify the brand:
+W-Bar-Y Fence Co, Inc.
+5685 MO-13, Brighton, MO 65617
+CJFW+2X Brighton, Missouri
+14178625115
+https://wbaryfence.com/
+https://goo.gl/maps/cDfJVArJLSWL6A82A
+
+here are some examples of brand voice for this piece of content.
+ 
+Serving Branson, Springfield Missouri and the four-state area since 1978
+In the Fall of 2003, W-Bar-Y Fence Co. broke ground on a new facility in Brighton, Missouri – 12 miles North of Springfield.
+Go to products
+W-Bar-Y Fence Company Springfield, Missouri
+Secure your property by building an attractive Fencing. Fencing is no longer a luxury, it has become a necessity. Make your home the envy of your neighborhood by calling W-Bar-Y Springfield, Missouri Fence Company. If you’re looking for affordable fencing solutions priced right for your budget or “Fencing Companies Near Me”, then W-Bar-Y Fence serving Branson Mo and Springfield Mo, has got you covered. W-Bar-Y Fence Company is a Fencing Company in Springfield, Missouri which specializes in fence installation for residential, commercial, or industrial properties. W-Bar-Y Fence Company is committed to excellence fencing design, execution, and maintenance of your fence. We are a professional fence contractor with a good reputation, friendly and reliable service who has been serving the Branson and Springfield, Missouri area since 1978.We are a full-service fence Company where your satisfaction is guaranteed, check our Gallery for samples of what we can do for you.We work with the best quality materials to give you the best of service. Some of the services we offer include:
+DECKS
+GATES
+POOL FENCES
+PERGOLAS
+PRIVACY FENCES
+ARBORS
+PICKET FENCES
+GAZEBOS
+WOOD PRIVACY FENCES
+
+If you are looking for the best fencing company in Springfield, Missouri look no further, W-Bar-Y Fence Company is here to put an end to your search."
 {business}="W-Bar-Y Fence Co, Inc."
 {website}="http://www.wbaryfence.com"
 {search_intent}="Commercial"
 {page_type}="Blog Post"
+We should never talk about other competitors from {competitor_urls}{competitor_urls} should only be used to understand the {main_keyword}

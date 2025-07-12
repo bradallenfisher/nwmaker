@@ -1,0 +1,19 @@
+Create a detailed content outline for a blog post about {keyword}.
+
+Key Information to Consider:
+1. Title-Focused Terms: {titleTermsList}
+2. Core Content Terms: {basicTermsList}
+3. Questions from {questions}.
+4. Key Entities and their Metrics: {entitiesList}
+
+The outline should:
+- Only contain a title and level 2 headings.
+- Contain enough headings to use all the {titleTermsList}.
+- Create a "FAQ" section using {questions}.
+  - Each question should be a level 2 heading.
+  - Each question should never contain "FAQ".
+- Be formatted using markdown with # for the title, and ## for level 2.
+- Never contain bold items, strong items, lists, or other formatting.
+- Prioritize covering entities with higher importance and relevance scores.
+- Contain headings that strengthen topic.
+- End with a conclusion about the {keyword}.

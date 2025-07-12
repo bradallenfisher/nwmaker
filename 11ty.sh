@@ -5,7 +5,7 @@
 # ======================================
 
 # Define the list of tags to choose from
-TAGS=("Technology" "Marketing" "Automation" "Visualization" "Systems" "Data" "Optimization")
+TAGS=("Marketing" "Business" "Entrepreneur" "Startup" "Marketing" "SEO" "Business" "Entrepreneur" "Startup")
 
 # Date range for random dates (in days)
 MIN_DAYS_AGO=1
