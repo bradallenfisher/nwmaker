@@ -6,11 +6,11 @@
         "bulk-project": "node bulk-generator.js --project",
         "article": "node article-generator.js",
         "questions": "node questions-generator.js",
+        "question-list": "node questions-generator.js --list",
         "pixabay": "node pixaby-gen.js",
         "pexels": "node pexels-gen.js",
         "process-images": "node process-images.js",
         "stability": "node stable-generator.js"
-
     },
     "dependencies": {
         "@google/genai": "^0.10.0",
