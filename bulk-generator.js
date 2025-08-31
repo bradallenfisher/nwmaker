@@ -464,21 +464,18 @@ class BulkGenerator {
   }
 
   /**
-   * Fetches all queries for a project from NeuronWriter API
-   * @param {string} projectId - The project ID
-   * @param {string[]} tags - Optional array of tags to filter queries
-   * @returns {Array} An array of query objects
-   */
+ * Fetches all queries for a project from NeuronWriter API
+ * @param {string} projectId - The project ID
+ * @param {string[]} tags - Optional array of tags to filter queries
+ * @returns {Array} An array of query objects
+ */
   async getProjectQueries(projectId, tags = []) {
     try {
+      // Always fetch all queries (API tag filtering is unreliable)
+      console.log(`Fetching all queries for project ${projectId}...`);
       const payload = {
         project: projectId
       };
-
-      // Only add tags to payload if they are provided
-      if (tags.length > 0) {
-        payload.tags = tags;
-      }
 
       const response = await axios.post(
         `${this.baseUrl}/list-queries`,
@@ -491,8 +488,40 @@ class BulkGenerator {
         }
       );
 
-      console.log('API Response:', JSON.stringify(response.data, null, 2));
-      return response.data;
+      const allQueries = response.data;
+      console.log(`Retrieved ${allQueries.length} total queries from project.`);
+
+      // If tags are specified, filter client-side
+      if (tags.length > 0) {
+        console.log(`Filtering queries by tags: ${tags.join(', ')}`);
+
+        const filteredQueries = allQueries.filter(query => {
+          // Check if the query has any of the specified tags
+          if (!query.tags || !Array.isArray(query.tags)) {
+            return false;
+          }
+          return tags.some(tag => query.tags.includes(tag));
+        });
+
+        console.log(`Found ${filteredQueries.length} queries matching the specified tags.`);
+
+        if (filteredQueries.length === 0) {
+          console.log('No queries found with the specified tags. Available tags in project:');
+          const allTags = new Set();
+          allQueries.forEach(query => {
+            if (query.tags && Array.isArray(query.tags)) {
+              query.tags.forEach(tag => allTags.add(tag));
+            }
+          });
+          console.log(`Available tags: ${Array.from(allTags).join(', ') || 'None'}`);
+        }
+
+        return filteredQueries;
+      } else {
+        // No tags specified, return all queries
+        console.log('No tag filtering requested, returning all queries.');
+        return allQueries;
+      }
     } catch (error) {
       console.error('Error fetching queries:', error.response?.data || error.message);
       throw error;
