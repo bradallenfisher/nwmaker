@@ -3,7 +3,7 @@
 # Check if required arguments are provided
 if [ "$#" -lt 4 ]; then
     echo "Usage: ./wp.sh <site-url> <username> <application-password> <content-root-dir> [category-id]"
-    echo "Example: ./wp.sh https://example.com admin xxxx-xxxx-xxxx-xxxx outputs/bulk [54]"
+    echo "Example: ./wp.sh https://example.com admin xxxx-xxxx-xxxx-xxxx outputs/html [54]"
     exit 1
 fi
 
