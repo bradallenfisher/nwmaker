@@ -1,5 +1,0 @@
-{spin}="At Culbertson Financial Services, we believe everyone should have access to trusted guidance and leading resources to achieve their dreams."
-{business}="Culbertson Financial Services"
-{website}="https://culbertsonfinancialservices.com/"
-{search_intent}="Commercial"
-{page_type}="Blog Post"

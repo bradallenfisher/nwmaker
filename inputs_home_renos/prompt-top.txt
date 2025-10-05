@@ -1,4 +1,0 @@
-{spin}="Upgrading your home through renovations can feel overwhelming, but the results are always worth it when your space truly reflects your style and needs."
-{website}="https://home-renovations.elementor.psu.edu"
-{search_intent}="Informational"
-{page_type}="Blog Post"

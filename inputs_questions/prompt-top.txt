@@ -1,4 +1,0 @@
-{spin}="Find timeless playbooks, tool reviews, and data-backed tips for attracting, qualifying, and converting leads, so your team can focus on closing deals. Subscribe to learn how consistent, smart lead generation keeps your pipeline healthy year-round."
-{website}="https://leadcraftr.com"
-{search_intent}="Informational"
-{page_type}="Blog Post"

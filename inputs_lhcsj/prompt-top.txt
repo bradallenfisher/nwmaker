@@ -1,4 +1,0 @@
-{spin}="Located in St. Joseph MO, Our mission is to connect you with Jesus and a community of believers. Look around our site for more information about who we are, what we believe, and our mission. Living life with other believers is vitally important to help challenge us to become more like Jesus. Check out opportunities to get connected!"
-{website}="https://lhcsj.org/"
-{search_intent}="Commercial"
-{page_type}="Blog Post"

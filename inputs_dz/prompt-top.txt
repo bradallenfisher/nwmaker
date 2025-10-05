@@ -1,5 +1,0 @@
-{spin}="D&Z Renovations is your trusted partner for top-quality contractor services in Centre County, PA. "
-{business}="D&Z Renovations"
-{website}="https://dzrenovations.com"
-{search_intent}="Commercial"
-{page_type}="Blog Post"

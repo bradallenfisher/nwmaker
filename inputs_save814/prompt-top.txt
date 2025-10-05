@@ -1,5 +1,0 @@
-{spin}="More Than Just Digits: Celebrating the People, Places, and Pride of Area Code 814 (and now 582!) Explore the 814 area code and learn about all it has to offer."
-{business}="Save 814"
-{website}="https://save814.com"
-{search_intent}="Informational"
-{page_type}="Blog Post"

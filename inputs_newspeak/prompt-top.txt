@@ -1,5 +1,0 @@
-{spin}="Latest Content About the World of Foundation Repair and Engineering."
-{business}="News Peak"
-{website}="https://newspeak.today"
-{search_intent}="informational"
-{page_type}="Blog Post"
