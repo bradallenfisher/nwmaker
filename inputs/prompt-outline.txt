@@ -7,10 +7,10 @@ Key Information to Consider:
 
 The outline should:
 - Only contain a title and level 2 headings.
-- Be strictly branded for D&Z Renovations.
+- Be strictly branded for Eger Excavating & Concrete LLC.
 - Contain enough headings to use most of the ${titleTermsList}.
 - Be formatted using markdown with # for the title, and ## for level 2.
-- Never contain bold items, strong items, em dash, lists, or other formatting.
+- Never contain bold items, strong items, lists, or other formatting.
 - Prioritize covering entities with higher importance and relevance scores.
 - Contain headings that strengthen our brand or service.
 - End with a call to action section about visting our contact page.

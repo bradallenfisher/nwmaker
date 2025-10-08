@@ -15,6 +15,7 @@ outputs/
 image-library/
 # Logs
 *.log
+archive/
 
 # Editor directories and files
 .idea/
