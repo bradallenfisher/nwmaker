@@ -70,8 +70,19 @@ class BulkGenerator {
       .map(e => `${e.t} (importance: ${e.importance.toFixed(2)}, relevance: ${e.relevance.toFixed(2)}, confidence: ${e.confidence.toFixed(2)})`)
       .join('\n');
 
+    // Extract spin/brand voice from prompt-top.txt
+    const topContent = await fs.readFile(path.join('inputs', 'prompt-top.txt'), 'utf8');
+    const spinMatch = topContent.match(/\{spin\}="([^"]+)"/s);
+    const spinContent = spinMatch ? spinMatch[1].trim() : '';
+
     // Read template and replace variables
     let outlinePrompt = await fs.readFile(path.join('inputs', 'prompt-outline.txt'), 'utf8');
+    
+    // Prepend spin content if available
+    if (spinContent) {
+      outlinePrompt = `BRAND VOICE AND EDITORIAL GUIDELINES:\n${spinContent}\n\n---\n\n${outlinePrompt}`;
+    }
+    
     outlinePrompt = outlinePrompt
       .replace('{keyword}', data.keyword)
       .replace('{titleTermsList}', titleTermsList)

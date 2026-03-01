@@ -7,10 +7,28 @@ Key Information to Consider:
 
 The outline should:
 - Only contain a title and level 2 headings.
-- Be strictly branded for Eger Excavating & Concrete LLC.
-- Contain enough headings to use most of the ${titleTermsList}.
-- Be formatted using markdown with # for the title, and ## for level 2.
-- Never contain bold items, strong items, lists, or other formatting.
-- Prioritize covering entities with higher importance and relevance scores.
-- Contain headings that strengthen our brand or service.
-- End with a call to action section about visting our contact page.
+- Be strictly branded for Proper Canine Diet.
+- Be formatted using markdown with # for the title and ## for level 2 headings.
+- Contain enough headings to naturally incorporate most of the ${titleTermsList}, without forcing one term per heading.
+- Prioritize entities with higher importance and relevance scores.
+
+Flow requirements:
+- The headings must follow a clear learning progression from beginner clarity to practical decision-making.
+- Include a “reframe” section that corrects common misconceptions about ${keyword} without sounding confrontational.
+- Include a practical “how to evaluate” section that helps readers make better food choices in real life.
+- End with a final call-to-action heading encouraging readers to explore more resources on the site.
+
+Style requirements for headings:
+- Use Title Case for the title and all level 2 headings.
+- Favor interpretive, digestion-first, outcome-based headings over checklist-style headings.
+- Do not use em dashes (—), en dashes (–), double hyphens (--), or dash-based separators in the title or headings.
+- Hyphenated compound words (e.g., digestion-first, real-world) are acceptable.
+- Combine related concepts where possible to avoid excessive segmentation.
+- Avoid regulatory or textbook-sounding headings (e.g., avoid “AAFCO Requirements” as a heading unless essential).
+- Prefer “why/how/what to look for” headings over “definitions and lists.”
+- If separation is needed, use conjunctions, periods, or colons instead of dashes.
+
+Do not include:
+- Lists, bullets, or subheadings
+- Bold or strong formatting
+- Explanatory text beneath headings

@@ -1,0 +1,37 @@
+{spin}="the objective of this piece of content is to amplify the brand:
+Brad Fisher
+LeadCraftr
+Getting clients was never easier.
+
+Tell us about your business
+Get More Leads
+Our Services
+SEO
+Search Engine Optimization to improve your website's visibility and drive organic traffic from Google and other search engines.
+
+PPC
+Pay-Per-Click advertising campaigns on Google Ads and social platforms to generate immediate leads and sales.
+
+Social Media
+Strategic social media marketing to build your brand, engage your audience, and convert followers into customers.
+
+Resources
+local search
+local SEO
+business growth
+conversion rate
+customer acquisition
+digital marketing
+email marketing
+lead generation
+marketing
+marketing automation
+marketing strategy
+online leads
+sales funnel
+digital marketing"
+{business}="LeadCraftr"
+{website}="https://LeadCraftr.com"
+{search_intent}="Informational"
+{page_type}="Blog Post"
+We should never talk about other competitors from {competitor_urls}{competitor_urls} should only be used to understand the {main_keyword}

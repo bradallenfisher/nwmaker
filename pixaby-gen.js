@@ -8,17 +8,17 @@ dotenv.config();
 
 // Default settings for easy access and modification
 const DEFAULT_OPTIONS = {
-  limit: 60,             // Number of images to download (max per page)
+  limit: 200,             // Number of images to download (max per page)
   imageSize: 'large',    // Size of images: 'original', 'large', 'medium'
-  order: 'latest',      // 'popular' or 'latest'
-  imageType: 'vector',  // 'photo', 'illustration', 'vector', or 'all'
+  order: 'popular',      // 'popular' or 'latest'
+  imageType: 'photo',  // 'photo', 'illustration', 'vector', or 'all'
   orientation: 'horizontal', // 'horizontal', 'vertical', or 'all'
   safeSearch: true,      // Whether to enable safe search
   perPage: 200,          // Number of results per page in API request (max 200)
   page: 1,                // Page number to download from
   // Image processing options
   processImages: true,   // Whether to process images with Sharp
-  outputFormat: 'webp',  // Output format: 'webp', 'jpeg', 'png'
+  outputFormat: 'jpeg',  // Output format: 'webp', 'jpeg', 'png'
   outputWidth: 1000,     // Target width in pixels
   webpQuality: 80        // WebP quality (0-100, higher is better quality)
 };
@@ -155,11 +155,38 @@ class ImageGenerator {
   }
 
   /**
+   * Create a custom filename based on arguments
+   * @param {string} tags - Search tags
+   * @param {Array} customArgs - Additional arguments for filename
+   * @param {number} index - Image index number
+   * @param {string} extension - File extension
+   * @returns {string} - Custom filename
+   */
+  createCustomFilename(tags, customArgs = [], index, extension) {
+    // Clean and format the tags - only remove special characters, keep spaces
+    const cleanTags = tags.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters but keep spaces and hyphens
+      .trim();
+    
+    // Clean and format custom arguments - only remove special characters, keep spaces
+    const cleanArgs = customArgs.map(arg => 
+      arg.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters but keep spaces and hyphens
+        .trim()
+    ).filter(arg => arg.length > 0); // Remove empty arguments
+    
+    // Combine all parts with spaces
+    const allParts = [cleanTags, ...cleanArgs, index.toString()];
+    return `${allParts.join(' ')}.${extension}`;
+  }
+
+  /**
    * Download images matching the given tags
    * @param {string} tags - Search tags (comma separated)
    * @param {Object} options - Additional search and download options
+   * @param {Array} customArgs - Additional arguments for custom filenames
    */
-  async downloadImagesByTags(tags, options = {}) {
+  async downloadImagesByTags(tags, options = {}, customArgs = []) {
     try {
       await this.ensureDirectories();
 
@@ -202,7 +229,15 @@ class ImageGenerator {
         }
 
         // Create a descriptive filename
-        const filename = `${image.id}_${image.user}_${dirName}.jpg`;
+        let filename;
+        if (customArgs.length > 0) {
+          // Use custom filename format
+          const extension = options.outputFormat || DEFAULT_OPTIONS.outputFormat;
+          filename = this.createCustomFilename(tags, customArgs, i + 1, extension);
+        } else {
+          // Use original format
+          filename = `${image.id}_${image.user}_${dirName}.jpg`;
+        }
         const outputPath = path.join(outputDir, filename);
         
         // Download and process the image
@@ -341,8 +376,9 @@ const run = async () => {
     
     if (args.length === 0) {
       console.error('Please provide search tags or "list" to see previous searches');
-      console.error('Usage: npm run pixabay <tags> [options]');
+      console.error('Usage: npm run pixabay <tags> [custom_args] [options]');
       console.error('Example: npm run pixabay "nature,landscape" --page=2 --imageType=photo');
+      console.error('Example with custom filenames: npm run pixabay "kitchen interior design" "dz_renovations" "state_college" "16801"');
       console.error('To list previous searches: npm run pixabay list');
       process.exit(1);
     }
@@ -361,11 +397,13 @@ const run = async () => {
     
     // Start with the default options
     const options = { ...DEFAULT_OPTIONS };
+    const customArgs = [];
     
-    // Parse options from remaining arguments
+    // Parse arguments
     for (let i = 1; i < args.length; i++) {
       const arg = args[i];
       if (arg.startsWith('--')) {
+        // This is an option
         const [key, value] = arg.slice(2).split('=');
         // Convert numeric values to numbers
         if (!isNaN(value)) {
@@ -375,13 +413,19 @@ const run = async () => {
         } else {
           options[key] = value;
         }
+      } else {
+        // This is a custom argument for filename
+        customArgs.push(arg);
       }
     }
     
     console.log('Options:', options);
+    if (customArgs.length > 0) {
+      console.log('Custom filename arguments:', customArgs);
+    }
 
     // Download images
-    await imageGenerator.downloadImagesByTags(tags, options);
+    await imageGenerator.downloadImagesByTags(tags, options, customArgs);
     
   } catch (error) {
     console.error('Error:', error.message);

@@ -1,36 +1,85 @@
-Create a {page_type} that will help people understand the current {main_keyword}.
-Visit the URLs in {competitor_urls}. Analyze what topics they include, what questions they answer, and what visuals or examples they use. Use this to ensure our content is more complete and helpful, covering gaps they miss.
-Read {spin} to understand the writers objective.
-Read all items in the {questions} section.
-All content we are writing should help the reader with their search intent.
-{questions} should serve as a map to help you understand why a user would search {main_keyword}.
-You are the lead content creator for a marketing firm working for {website}.
-I want you to write content for the topic of {main_keyword}.
-The {page_type} that you write should use {outline} as the outline.
-Be sure to use the heading levels presented in the markdown when expanding the {outline}.
-Use the list items in the {outline} for section explanations.
-When expanding each item in the {outline}, keep the tone natural, friendly, and informative. Avoid jargon unless it’s explained in plain language.
-Please turn them into paragraphs that are short and easy to read.
-Using {outline} continue to create this page with the following commands:
-You are speaking to 12th-grade level students.
-Your sentences are short and sweet.
-Speak in easy-to-understand sentences.
-Keep paragraphs to a maximum of 3 sentences. 
-Create a new paragraph if it exceeds 3 sentences. 
-Use both unordered and ordered lists to break up the wall of text.
-Please use strong tags around certain words or phrases that help emphasize the point of the section.
-Ensure each sentence contains about 15 to 20 words.
-Write using a conversational style.
-This list of commands should not override {outline} but should be considered when writing paragraphs that support each {outline} item.
-Headings, links, and lists should contain markdown language.
-{listofkeywords} is a pool of terms to choose from when writing the sections for the page.
-All {outline} items should be created with markdown using heading format.
-The first letter of each heading should be capitalized.
-Do not print out placeholder text or symbols. ({}) etc...
-Do not echo my prompt.
-Do not remind me what I asked you for.
-Do not apologize.
-Do not self-reference.
-Do not use generic filler phrases.
-Get to the point precisely and accurately.
+Create a {page_type} that helps people clearly understand {main_keyword}.
 
+Visit the URLs in {competitor_urls}.
+Analyze:
+- What topics they include
+- What questions they answer
+- What assumptions they make
+- What examples or visuals they rely on
+
+Use competitor content as reference points, not authorities.
+Do not mirror their structure, tone, or prioritization.
+
+Identify gaps, oversimplifications, or rigid conclusions in competitor content and address them with clearer context, practical interpretation, and real-world perspective.
+
+Read {spin} carefully to understand the voice, worldview, and editorial rules.
+These instructions must be followed consistently throughout the entire article.
+
+Read all items in the {questions} section.
+Use {questions} as a map to understand why someone would search for {main_keyword} and what clarity they are seeking.
+
+All content must serve the reader’s search intent.
+Assume the reader is a thoughtful dog owner trying to make sense of conflicting advice.
+
+You are the lead content creator for a national dog nutrition education brand at {website}.
+Write content for the topic {main_keyword}.
+
+The {page_type} you write must use {outline} exactly as the structural outline.
+Do not add, remove, or rename headings.
+
+Use the heading levels presented in the markdown when expanding the {outline}.
+All headings must use markdown syntax and have their first letter capitalized.
+
+When expanding each {outline} section:
+- Keep the tone calm, confident, and practical
+- Avoid institutional, academic, or regulatory language unless necessary
+- Explain technical terms immediately in plain language
+- Favor digestion, ingredient quality, and real-world feeding outcomes over formulas or percentages
+- Do not use em dashes (—), en dashes (–), or double hyphens (--).
+
+If a sentence would normally use an em dash, rewrite it using:
+- A period
+- A comma
+- Or parentheses
+
+This rule applies to all body text, headings, and lists.
+
+If competitors frame a topic as definitive or settled, introduce measured nuance and explain why outcomes vary between dogs.
+
+Avoid framing guidance as absolute rules.
+Use language such as:
+- “For many dogs…”
+- “In practice…”
+- “One common pattern is…”
+- “This can be helpful when…”
+
+Write for a 9th-grade reading level.
+Sentences should be clear, direct, and conversational.
+
+Keep paragraphs to a maximum of 3 sentences.
+Start a new paragraph if a section exceeds 3 sentences.
+
+Ensure most sentences are between 5 and 20 words.
+
+Use unordered and ordered lists where helpful to break up dense text.
+Lists should clarify ideas, not repeat headings.
+
+Use <strong> tags sparingly to emphasize important concepts or reframes.
+Do not overuse emphasis.
+
+{listofkeywords} is a pool of relevant terms.
+Use them naturally where appropriate.
+Do not force them.
+
+Do not include:
+- Placeholder text
+- Prompt references
+- Apologies
+- Self-references
+- Generic filler phrases
+- Mentions of competitors by name
+
+Do not echo this prompt.
+Do not explain your process.
+
+Get to the point clearly and accurately while maintaining a calm, grounded tone.

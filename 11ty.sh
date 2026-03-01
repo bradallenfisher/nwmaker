@@ -5,7 +5,7 @@
 # ======================================
 
 # Define the list of tags to choose from
-TAGS=("Marketing" "Business" "Entrepreneur" "Startup" "Marketing" "SEO" "Business" "Entrepreneur" "Startup")
+TAGS=("Local SEO" "Local Search" "Map Pack" "GBP" "Lead Generation" "Marketing" "SEO" "Business")
 
 # Date range for random dates (in days)
 MIN_DAYS_AGO=1
@@ -96,11 +96,8 @@ get_past_date() {
     "
 }
 
-# Initialize tag tracking
-declare -A tag_counts
-for tag in "${TAGS[@]}"; do
-    tag_counts[$tag]=0
-done
+# Track tags used (simple array for bash 3.2 compatibility)
+tags_used=()
 
 # Track total files processed
 total_processed=0
@@ -165,7 +162,7 @@ for file in "$CONTENT_DIR"/*.md; do
         
         # Get a random tag for this file
         random_tag=$(get_random_tag)
-        tag_counts[$random_tag]=$((tag_counts[$random_tag] + 1))
+        tags_used+=("$random_tag")
         
         # Write front matter and image to temp file
         cat > "$temp_file" << EOF
@@ -213,8 +210,16 @@ done
 # Print tag distribution summary
 echo "-----------------------------------------"
 echo "Tag distribution:"
-for tag in "${!tag_counts[@]}"; do
-    echo "  ${tag}: ${tag_counts[$tag]} files"
+for tag in "${TAGS[@]}"; do
+    count=0
+    for used_tag in "${tags_used[@]}"; do
+        if [ "$used_tag" = "$tag" ]; then
+            count=$((count + 1))
+        fi
+    done
+    if [ $count -gt 0 ]; then
+        echo "  ${tag}: ${count} files"
+    fi
 done
 
 echo "-----------------------------------------"

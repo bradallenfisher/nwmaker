@@ -2,8 +2,9 @@
 
 # Check if required arguments are provided
 if [ "$#" -lt 4 ]; then
-    echo "Usage: ./wp.sh <site-url> <username> <application-password> <content-root-dir> [category-id]"
-    echo "Example: ./wp.sh https://example.com admin xxxx-xxxx-xxxx-xxxx outputs/html [54]"
+    echo "Usage: ./wp.sh <site-url> <username> <application-password> <content-root-dir> [category-id] [content-type]"
+    echo "Example: ./wp.sh https://example.com admin xxxx-xxxx-xxxx-xxxx outputs/html [54] [post|page]"
+    echo "Content type: 'post' (default) or 'page'"
     exit 1
 fi
 
@@ -12,7 +13,22 @@ SITE_URL="${1%/}"  # Remove trailing slash if present
 WP_USER="$2"
 WP_APP_PASSWORD="$3"
 ROOT_DIR="$4"
-POST_CATEGORY="${5:-1}"  # Default to category 1 if not specified
+
+# Handle parameters 5 and 6 intelligently
+if [ "$#" -eq 5 ]; then
+    # Only 5 parameters provided - check if last one is 'page' or 'post'
+    if [ "$5" = "page" ] || [ "$5" = "post" ]; then
+        CONTENT_TYPE="$5"
+        POST_CATEGORY="1"  # Default category for posts
+    else
+        POST_CATEGORY="$5"
+        CONTENT_TYPE="post"  # Default to post
+    fi
+else
+    # 6 parameters provided - traditional order
+    POST_CATEGORY="${5:-1}"  # Default to category 1 if not specified
+    CONTENT_TYPE="${6:-post}"  # Default to 'post' if not specified
+fi
 
 # Verify the root directory exists
 if [ ! -d "$ROOT_DIR" ]; then
@@ -46,12 +62,18 @@ capitalize_title() {
     }'
 }
 
-# Function to create WordPress post using REST API
-create_post() {
+# Function to create WordPress content using REST API
+create_content() {
     local title="$1"
     local content="$2"
     local status="$3"
     local post_date="$4"
+    
+    # Determine API endpoint based on content type
+    local api_endpoint="posts"
+    if [ "$CONTENT_TYPE" = "page" ]; then
+        api_endpoint="pages"
+    fi
     
     # Use Python to create the entire JSON payload
     local json_data=$(python3 -c "
@@ -59,9 +81,11 @@ import json, sys
 data = {
     'title': '$title',
     'content': sys.stdin.read(),
-    'status': '$status',
-    'categories': [$POST_CATEGORY]
+    'status': '$status'
 }
+# Only add categories for posts, not pages
+if '$CONTENT_TYPE' == 'post' and '$POST_CATEGORY' != 'page':
+    data['categories'] = [$POST_CATEGORY]
 if '$status' == 'future':
     data['date'] = '$post_date'
 print(json.dumps(data))
@@ -72,24 +96,25 @@ print(json.dumps(data))
          -H "Content-Type: application/json" \
          -H "Authorization: Basic $(echo -n "$WP_USER:$WP_APP_PASSWORD" | base64)" \
          -d "$json_data" \
-         "$SITE_URL/wp-json/wp/v2/posts")
+         "$SITE_URL/wp-json/wp/v2/$api_endpoint")
     
     # Check if the request was successful
     if echo "$response" | grep -q "\"id\":" ; then
-        echo "Success: Post created successfully"
-        post_id=$(echo "$response" | python3 -c "import json,sys; print(json.loads(sys.stdin.read()).get('id', 'unknown'))")
-        echo "Post ID: $post_id"
+        echo "Success: $CONTENT_TYPE created successfully"
+        content_id=$(echo "$response" | python3 -c "import json,sys; print(json.loads(sys.stdin.read()).get('id', 'unknown'))")
+        echo "$(echo $CONTENT_TYPE | sed 's/./\U&/') ID: $content_id"
     else
-        echo "Error: Failed to create post"
+        echo "Error: Failed to create $CONTENT_TYPE"
         echo "Response: $response"
     fi
 }
 
 echo "Starting bulk import from root directory: $ROOT_DIR"
+echo "Content type: $CONTENT_TYPE"
 echo "Finding all HTML files recursively..."
 
-# Counter for tracking first post
-post_counter=0
+# Counter for tracking first content item
+content_counter=0
 
 # Find all HTML files recursively in the root directory
 while IFS= read -r -d '' file; do
@@ -101,25 +126,25 @@ while IFS= read -r -d '' file; do
     # Read content and remove h1 tags
     content=$(sed 's/<h1>.*<\/h1>//g' "$file")
     
-    if [ $post_counter -eq 0 ]; then
-        # First post - publish immediately
+    if [ $content_counter -eq 0 ]; then
+        # First content item - publish immediately
         echo "Importing: $title (publishing now)"
         echo "From file: $file"
-        create_post "$title" "$content" "publish"
-        # Set post_date to current time for calculating next posts
+        create_content "$title" "$content" "publish"
+        # Set post_date to current time for calculating next content items
         post_date=$(date +"%Y-%m-%d %H:%M:%S")
     else
-        # Calculate next post date (current post_date + 1 day)
+        # Calculate next content date (current post_date + 1 day)
         post_date=$(date -v+24H -jf "%Y-%m-%d %H:%M:%S" "$post_date" +"%Y-%m-%d %H:%M:%S")
         echo "Importing: $title (scheduled for: $post_date)"
         echo "From file: $file"
-        create_post "$title" "$content" "future" "$post_date"
+        create_content "$title" "$content" "future" "$post_date"
     fi
     
-    post_counter=$((post_counter + 1))
+    content_counter=$((content_counter + 1))
     
     # Add a small delay between requests to avoid overwhelming the API
     sleep 2
 done < <(find "$ROOT_DIR" -type f -name "*.html" -print0)
 
-echo "Import complete. Imported $post_counter posts."
+echo "Import complete. Imported $content_counter ${CONTENT_TYPE}s."

@@ -204,12 +204,39 @@ class PexelsImageGenerator {
   }
 
   /**
+   * Create a custom filename based on arguments
+   * @param {string} query - Search query
+   * @param {Array} customArgs - Additional arguments for filename
+   * @param {number} index - Image index number
+   * @param {string} extension - File extension
+   * @returns {string} - Custom filename
+   */
+  createCustomFilename(query, customArgs = [], index, extension) {
+    // Clean and format the query - only remove special characters, keep spaces
+    const cleanQuery = query.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters but keep spaces and hyphens
+      .trim();
+    
+    // Clean and format custom arguments - only remove special characters, keep spaces
+    const cleanArgs = customArgs.map(arg => 
+      arg.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters but keep spaces and hyphens
+        .trim()
+    ).filter(arg => arg.length > 0); // Remove empty arguments
+    
+    // Combine all parts with spaces
+    const allParts = [cleanQuery, ...cleanArgs, index.toString()];
+    return `${allParts.join(' ')}.${extension}`;
+  }
+
+  /**
    * Download images matching the given query
    * @param {string} query - Search query
    * @param {Object} options - Additional search and download options
    * @param {boolean} useCurated - Whether to use curated images instead of search
+   * @param {Array} customArgs - Additional arguments for custom filenames
    */
-  async downloadImagesByQuery(query, options = {}, useCurated = false) {
+  async downloadImagesByQuery(query, options = {}, useCurated = false, customArgs = []) {
     try {
       await this.ensureDirectories();
 
@@ -248,8 +275,16 @@ class PexelsImageGenerator {
         const imageUrl = this.getImageUrlBySize(photo, imageSize);
 
         // Create a descriptive filename
-        const safePhotographerName = photo.photographer.replace(/\s+/g, '_').toLowerCase();
-        const filename = `${photo.id}_${safePhotographerName}_${dirName}.jpg`;
+        let filename;
+        if (customArgs.length > 0) {
+          // Use custom filename format
+          const extension = options.outputFormat || DEFAULT_OPTIONS.outputFormat;
+          filename = this.createCustomFilename(query, customArgs, i + 1, extension);
+        } else {
+          // Use original format
+          const safePhotographerName = photo.photographer.replace(/\s+/g, '_').toLowerCase();
+          filename = `${photo.id}_${safePhotographerName}_${dirName}.jpg`;
+        }
         const outputPath = path.join(outputDir, filename);
         
         // Download and process the image
@@ -400,8 +435,9 @@ const run = async () => {
     
     if (args.length === 0) {
       console.error('Please provide a search query or "list" to see previous searches');
-      console.error('Usage: npm run pexels <query> [options]');
+      console.error('Usage: npm run pexels <query> [custom_args] [options]');
       console.error('Example: npm run pexels "nature landscape" --page=2 --imageSize=large');
+      console.error('Example with custom filenames: npm run pexels "kitchen interior design" "dz_renovations" "state_college" "16801"');
       console.error('To list previous searches: npm run pexels list');
       process.exit(1);
     }
@@ -421,11 +457,13 @@ const run = async () => {
     
     // Start with the default options
     const options = { ...DEFAULT_OPTIONS };
+    const customArgs = [];
     
-    // Parse options from remaining arguments
+    // Parse arguments
     for (let i = 1; i < args.length; i++) {
       const arg = args[i];
       if (arg.startsWith('--')) {
+        // This is an option
         const [key, value] = arg.slice(2).split('=');
         // Convert numeric values to numbers
         if (!isNaN(value)) {
@@ -435,17 +473,23 @@ const run = async () => {
         } else {
           options[key] = value;
         }
+      } else {
+        // This is a custom argument for filename
+        customArgs.push(arg);
       }
     }
     
     console.log('Options:', options);
+    if (customArgs.length > 0) {
+      console.log('Custom filename arguments:', customArgs);
+    }
 
     // Download images
     if (useCurated) {
       console.log('Using curated collection instead of search');
-      await imageGenerator.downloadImagesByQuery('curated', options, true);
+      await imageGenerator.downloadImagesByQuery('curated', options, true, customArgs);
     } else {
-      await imageGenerator.downloadImagesByQuery(query, options, false);
+      await imageGenerator.downloadImagesByQuery(query, options, false, customArgs);
     }
     
   } catch (error) {

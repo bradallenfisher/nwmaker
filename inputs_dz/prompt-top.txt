@@ -106,5 +106,5 @@ PRIVACY POLICY"
 {business}="D&Z Renovations"
 {website}="https://dzrenovations.com"
 {search_intent}="Informational"
-{page_type}="Blog Post"
+{page_type}="Service Page"
 We should never talk about other competitors from {competitor_urls}{competitor_urls} should only be used to understand the {main_keyword}
